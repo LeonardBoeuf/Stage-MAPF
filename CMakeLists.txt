@@ -14,8 +14,6 @@ FetchContent_MakeAvailable(SFML)
 
 add_executable(
     main src/main.cpp
-    src/graphismes.hh
-    src/graphismes.cpp
     src/graph.hpp
     src/graph.cpp
     

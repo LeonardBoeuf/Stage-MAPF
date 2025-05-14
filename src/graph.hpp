@@ -73,7 +73,10 @@ public:
     void new_wall(const Position &pos);
     void new_wall(const unsigned int x, const unsigned int y);
     void new_agent(const Position &pos, const int id);
+    void new_agent(const unsigned int x, const unsigned int y, const int id);
     // void move_agent(const Position &from, const Position &to);
+
+    void run();
     
     std::vector<Position> a_star(const Position &start, const Position &goal, std::function<unsigned int (const Position&)> h) const;
 };

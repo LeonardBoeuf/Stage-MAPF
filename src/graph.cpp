@@ -3,6 +3,8 @@
 #include <map>
 #include <algorithm>
 #include <limits>
+#include <SFML/Graphics.hpp>
+
 
 Agent::Agent(int id) noexcept : Cell(), id_(id) {}
 
@@ -107,10 +109,54 @@ bool Graph::is_agent(const Position &pos) const {
 }
 
 void Graph::new_agent(const Position &pos, const int id) {
-    if (pos.get_x() >= width_ || pos.get_y() >= height_) throw std::out_of_range("Tried to place outside the graph");
-    grille_[pos.get_y()][pos.get_x()] = std::make_unique<Agent>(id);
+    Graph::new_agent(pos.get_x(),pos.get_y(),id);
 }
 
+void Graph::new_agent(const unsigned int x, const unsigned int y, const int id) {
+    if (x >= width_ || y >= height_) throw std::out_of_range("Tried to place outside the graph");
+    grille_[y][x] = std::make_unique<Agent>(id);
+}
+
+void Graph::run(){
+    auto window = sf::RenderWindow(sf::VideoMode({1920u, 1080u}), "Grille de MAPF");
+    window.setFramerateLimit(144);
+    //sf::Clock clock; // starts the clock
+
+    sf::Vector2u size = window.getSize();
+    auto [width, height] = size;
+
+    while (window.isOpen())
+    {
+        auto c = sf::Color(0,0,0); 
+
+        while (const std::optional event = window.pollEvent())
+        {
+            if (event->is<sf::Event::Closed>())
+            {
+                window.close();
+            }
+        }
+
+        window.clear(c);
+
+        for(int i=0;i<get_width();i++){
+            for(int j=0;j<get_height();j++){
+                sf::RectangleShape box({(float)(width/get_width()-1), (float)(height/get_height()-1)});
+                if(is_empty(Position(i,j)))
+                    box.setFillColor(sf::Color(200,200,200)); 
+                else if(is_agent(Position(i,j)))
+                    box.setFillColor(sf::Color(0,0,200)); 
+                else 
+                    box.setFillColor(sf::Color(0,0,0)); 
+                box.setPosition({(float)(1+i*width/get_width()),(float)(1+j*height/get_height())});
+                window.draw(box);
+            }
+        }
+        
+
+        window.display();
+    }
+}
 
 std::vector<Position> Graph::a_star(
     const Position &start,

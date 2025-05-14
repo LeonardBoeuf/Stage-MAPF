@@ -1,9 +1,10 @@
 #include <iostream>
-#include "graphismes.hh"
+#include "graph.hpp"
 
 int main()
 {
-    Grille_MAPF M(5,4);
-    M.new_wall(1,2);
-    M.run();
+    Graph G(5,4);
+    G.new_wall(1,2);
+    G.new_agent(0,0,1);
+    G.run();
 }

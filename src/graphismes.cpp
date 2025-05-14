@@ -6,6 +6,10 @@ void Grille_MAPF::new_wall(const unsigned int x, const unsigned int y){
     _graphe.new_wall(x,y);
 }
 
+void Grille_MAPF::make_lab(){
+    int ** Tab= new int*;
+}
+
 
 void Grille_MAPF::run(){
     auto window = sf::RenderWindow(sf::VideoMode({1920u, 1080u}), "Grille de MAPF");

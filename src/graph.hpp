@@ -57,6 +57,8 @@ private:
     std::vector<std::vector<std::unique_ptr<Cell>>> grille_;
 public:
     Graph(unsigned int width, unsigned int height);
+    Graph(const Graph&) = delete;
+    Graph(Graph&&) = default;
     
     bool is_empty(const Position &pos) const;
     bool is_wall(const Position &pos) const;

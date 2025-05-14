@@ -1,11 +1,11 @@
 #pragma once
 #include <string>
-#include "graph.hh"
+#include "graph.hpp"
 
 
 class Grille_MAPF{
     public :
-    Grille_MAPF(Graph & g) : _graphe(g){}
+    Grille_MAPF(unsigned int width, unsigned int height) : _graphe(Graph(width,height)){}
     void run();
 
     private :

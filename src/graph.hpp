@@ -62,16 +62,17 @@ public:
     
     bool is_empty(const Position &pos) const;
     bool is_wall(const Position &pos) const;
-    // bool is_agent(const Position &pos) const;
+    bool is_agent(const Position &pos) const;
     // int get_agent_id(const Position &pos) const;
     // std::pair<int,int> get_agent_pos(const int id) const;
     unsigned int get_width() const noexcept;
     unsigned int get_height() const noexcept;
     
-    // void set_empty(const Position &pos);
+    void set_empty(const Position &pos);
+    void set_empty(const unsigned int x, const unsigned int y);
     void new_wall(const Position &pos);
     void new_wall(const unsigned int x, const unsigned int y);
-    // void new_agent(const Position &pos, const int id);
+    void new_agent(const Position &pos, const int id);
     // void move_agent(const Position &from, const Position &to);
     
     std::vector<Position> a_star(const Position &start, const Position &goal, std::function<unsigned int (const Position&)> h) const;

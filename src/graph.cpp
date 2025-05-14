@@ -198,7 +198,7 @@ void Graph::run(
                 window.close();
             }
         }
-        if(clock.getElapsedTime()>sf::seconds(1.0f)and a<vect.size()){
+        if(clock.getElapsedTime()>sf::seconds(0.10f)and a<vect.size()){
             clock.restart();
             ++a;
         }

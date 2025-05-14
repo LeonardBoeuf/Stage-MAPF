@@ -91,6 +91,27 @@ bool Graph::is_wall(const Position &pos) const {
     return p != nullptr;
 }
 
+void Graph::set_empty(const Position &pos) {
+    Graph::set_empty(pos.get_x(),pos.get_y());
+}
+
+void Graph::set_empty(const unsigned int x, const unsigned int y) {
+    if (x >= width_ || y >= height_) throw std::out_of_range("Tried to place outside the graph");
+    grille_[y][x] = nullptr;
+}
+
+bool Graph::is_agent(const Position &pos) const {
+    if (grille_.at(pos.get_y()).at(pos.get_x()) == nullptr) return false;
+    auto p(dynamic_cast<Agent *>(grille_[pos.get_y()][pos.get_x()].get()));
+    return p != nullptr;
+}
+
+void Graph::new_agent(const Position &pos, const int id) {
+    if (pos.get_x() >= width_ || pos.get_y() >= height_) throw std::out_of_range("Tried to place outside the graph");
+    grille_[pos.get_y()][pos.get_x()] = std::make_unique<Agent>(id);
+}
+
+
 std::vector<Position> Graph::a_star(
     const Position &start,
     const Position &goal,

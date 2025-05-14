@@ -5,7 +5,6 @@
 #include <limits>
 #include <SFML/Graphics.hpp>
 
-
 Agent::Agent(int id) noexcept : Cell(), id_(id) {}
 
 int Agent::get_id() const noexcept {
@@ -43,6 +42,18 @@ bool Position::operator!=(const Position &pos) const noexcept {
 
 bool Position::operator<(const Position &pos) const noexcept {
     return x_ < pos.x_ || (x_ == pos.x_ && y_ < pos.y_);
+}
+
+unsigned int square(unsigned int x) noexcept {
+    return x*x;
+}
+
+unsigned int Position::dist_eucl(const Position &a, const Position &b) noexcept {
+    return a.dist_eucl(b);
+}
+
+unsigned int Position::dist_eucl(const Position &pos) const noexcept {
+    return square(x_ - pos.x_) + square(y_ - pos.y_);
 }
 
 std::ostream& operator<<(std::ostream &stream, const Position &pos) {

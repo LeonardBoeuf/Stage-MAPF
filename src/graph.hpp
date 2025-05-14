@@ -40,6 +40,9 @@ public:
 
     // For map
     bool operator<(const Position &pos) const noexcept;
+
+    static unsigned int dist_eucl(const Position &a, const Position &b) noexcept;
+    unsigned int dist_eucl(const Position &pos) const noexcept;
 };
 
 

@@ -4,7 +4,21 @@
 int main()
 {
     Graph G(50,40);
-    G.run(Position(5,5),Position(2,3),[](const Position&pos){return pos.dist_eucl(Position(2,3));});
-    G.run(Position(0,0),Position(2,30),[](const Position&pos){return pos.dist_eucl(Position(2,30));});
+    auto start=G.run();
+    Position a;
+    Position b;
+    if(start.first ==nullptr){
+        a= Position(0,0);
+    }
+    else {
+        a=*start.first;
+    }
+    if(start.second ==nullptr){
+        b= Position(0,0);
+    }
+    else {
+        b=*start.second;
+    }
+    G.run(a,b,[&b](const Position&pos){return pos.dist_eucl(b);});
 
 }

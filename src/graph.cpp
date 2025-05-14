@@ -4,6 +4,7 @@
 #include <algorithm>
 #include <limits>
 #include <SFML/Graphics.hpp>
+#include <iostream>
 
 Agent::Agent(int id) noexcept : Cell(), id_(id) {}
 
@@ -128,11 +129,11 @@ void Graph::new_agent(const unsigned int x, const unsigned int y, const int id) 
     grille_[y][x] = std::make_unique<Agent>(id);
 }
 
-void Graph::run(){
+std::pair<Position*,Position*> Graph::run(){
     auto window = sf::RenderWindow(sf::VideoMode({1920u, 1080u}), "Grille de MAPF");
     window.setFramerateLimit(144);
     //sf::Clock clock; // starts the clock
-
+    std::pair<Position*,Position*> ret=std::pair<Position*,Position*>(nullptr,nullptr);
     sf::Vector2u size = window.getSize();
     auto [width, height] = size;
 
@@ -146,6 +147,45 @@ void Graph::run(){
             {
                 window.close();
             }
+            if (sf::Mouse::isButtonPressed(sf::Mouse::Button::Left))
+            {
+            auto [m_x, m_y] = sf::Mouse::getPosition(window);
+            int x=m_x/(width/width_);
+            int y=m_y/(height/height_);
+            if (x>width_-1){
+                x=width_-1;
+            }
+            if (y>height_-1){
+                y=height_-1;
+            }
+            if (x<0){
+                x=0;
+            }
+            if (y<0){
+                y=0;
+            }
+            Graph::new_wall(Position(x,y));
+            }
+            if (sf::Mouse::isButtonPressed(sf::Mouse::Button::Right))
+            {
+            auto [m_x, m_y] = sf::Mouse::getPosition(window);
+            int x=m_x/(width/width_);
+            int y=m_y/(height/height_);
+            if (x>width_-1){
+                x=width_-1;
+            }
+            if (y>height_-1){
+                y=height_-1;
+            }
+            if(ret.first==nullptr){
+                ret.first=new Position(x,y);
+                Graph::new_agent(*ret.first,1);
+            }
+            else if(ret.second==nullptr){
+                if(Position(x,y)!=*ret.first)
+                    ret.second=new Position(x,y);
+            }
+            }
         }
 
         window.clear(c);
@@ -153,13 +193,16 @@ void Graph::run(){
         for(int i=0;i<get_width();i++){
             for(int j=0;j<get_height();j++){
                 sf::RectangleShape box({(float)(width/get_width()-1), (float)(height/get_height()-1)});
-                if(is_empty(Position(i,j)))
+                if(is_empty(Position(i,j))){
                     box.setFillColor(sf::Color(200,200,200)); 
+                    if(ret.second!=nullptr and Position(i,j)==*ret.second)
+                        box.setFillColor(sf::Color(200,200,0)); 
+                }
                 else if(is_agent(Position(i,j)))
-                    box.setFillColor(sf::Color(0,0,200)); 
+                        box.setFillColor(sf::Color(0,0,200));
                 else 
                     box.setFillColor(sf::Color(0,0,0)); 
-                box.setPosition({(float)(1+i*width/get_width()),(float)(1+j*height/get_height())});
+                box.setPosition({(float)(1+i*(width/width_)),(float)(1+j*(height/height_))});
                 window.draw(box);
             }
         }
@@ -167,6 +210,7 @@ void Graph::run(){
 
         window.display();
     }
+    return ret;
 }
 
 void Graph::run(
@@ -181,6 +225,7 @@ void Graph::run(
     window.setFramerateLimit(900);
     sf::Clock clock; // starts the clock
     int a=0;
+    sf::Time t=sf::seconds(0.2f);
 
     sf::Vector2u size = window.getSize();
     auto [width, height] = size;
@@ -197,17 +242,32 @@ void Graph::run(
             {
                 window.close();
             }
+            if (sf::Mouse::isButtonPressed(sf::Mouse::Button::Left))
+            {
+            auto [m_x, m_y] = sf::Mouse::getPosition(window);
+            int x=m_x/(width/width_);
+            int y=m_y/(height/height_);
+            if (x>width_-1){
+                x=width_-1;
+            }
+            if (y>height_-1){
+                y=height_-1;
+            }
+            Graph::new_wall(Position(x,y));
+            }
+
         }
-        if(clock.getElapsedTime()>sf::seconds(0.10f)and a<vect.size()){
+        if(clock.getElapsedTime()> t and a<vect.size()){
             clock.restart();
             ++a;
+            t=t*0.98f;
         }
 
         window.clear(c);
 
-        for(int i=0;i<get_width();i++){
-            for(int j=0;j<get_height();j++){
-                sf::RectangleShape box({(float)(width/get_width()-1), (float)(height/get_height()-1)});
+        for(int i=0;i<width_;i++){
+            for(int j=0;j<height_;j++){
+                sf::RectangleShape box({(float)(width/width_-1), (float)(height/height_-1)});
                 if(is_empty(Position(i,j))){
                     auto beg=vect.end();
                     for(int e = 0; e<a;++e){
@@ -215,7 +275,7 @@ void Graph::run(
                     }
                     if(Position(i,j)==goal){
                         box.setFillColor(sf::Color(200,200,0)); 
-                    }
+                    } 
                     else if(std::find(beg,vect.end(),Position(i,j))==vect.end()){
                         box.setFillColor(sf::Color(200,200,200)); 
 
@@ -227,7 +287,7 @@ void Graph::run(
                 }
                 else 
                     box.setFillColor(sf::Color(0,0,0)); 
-                box.setPosition({(float)(1+i*width/get_width()),(float)(1+j*height/get_height())});
+                box.setPosition({(float)(1+i*(width/width_)),(float)(1+j*(height/height_))});
                 window.draw(box);
             }
         }

@@ -53,11 +53,27 @@ unsigned int Position::dist_eucl(const Position &a, const Position &b) noexcept 
 }
 
 unsigned int Position::dist_eucl(const Position &pos) const noexcept {
-    return square(x_ - pos.x_) + square(y_ - pos.y_);
+    unsigned int dx(x_ > pos.x_ ? x_ - pos.x_ : pos.x_ - x_);
+    unsigned int dy(y_ > pos.y_ ? y_ - pos.y_ : pos.y_ - y_);
+    return square(dx) + square(dy);
 }
 
 std::function<unsigned int (const Position&)> Position::dist_eucl_to() const noexcept {
     return [this](const Position &pos){return this->dist_eucl(pos);};
+}
+
+unsigned int Position::dist_taxicab(const Position &a, const Position &b) noexcept {
+    return a.dist_taxicab(b);
+}
+
+unsigned int Position::dist_taxicab(const Position &pos) const noexcept {
+    unsigned int dx(x_ > pos.x_ ? x_ - pos.x_ : pos.x_ - x_);
+    unsigned int dy(y_ > pos.y_ ? y_ - pos.y_ : pos.y_ - y_);
+    return dx + dy;
+}
+
+std::function<unsigned int (const Position&)> Position::dist_taxicab_to() const noexcept {
+    return [this](const Position &pos){return this->dist_taxicab(pos);};
 }
 
 std::ostream& operator<<(std::ostream &stream, const Position &pos) {

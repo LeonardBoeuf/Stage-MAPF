@@ -3,7 +3,7 @@
 
 int main()
 {
-    // Graph G(50,40);
-    Grille_MAPF M(50,40);
+    Grille_MAPF M(5,4);
+    M.new_wall(1,2);
     M.run();
 }

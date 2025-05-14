@@ -2,6 +2,11 @@
 #include "graphismes.hh"
 
 
+void Grille_MAPF::new_wall(const unsigned int x, const unsigned int y){
+    _graphe.new_wall(x,y);
+}
+
+
 void Grille_MAPF::run(){
     auto window = sf::RenderWindow(sf::VideoMode({1920u, 1080u}), "Grille de MAPF");
     window.setFramerateLimit(144);
@@ -24,14 +29,14 @@ void Grille_MAPF::run(){
 
         window.clear(c);
 
-        for(int i=0;i<=_graphe.get_width();i++){
-            for(int j=0;j<=_graphe.get_height();j++){
-                sf::RectangleShape box({width/_graphe.get_width()-1, height/_graphe.get_height()-1});
+        for(int i=0;i<_graphe.get_width();i++){
+            for(int j=0;j<_graphe.get_height();j++){
+                sf::RectangleShape box({(float)(width/_graphe.get_width()-1), (float)(height/_graphe.get_height()-1)});
                 if(_graphe.is_empty(Position(i,j)))
                     box.setFillColor(sf::Color(200,200,200)); 
                 else 
                     box.setFillColor(sf::Color(0,0,0)); 
-                box.setPosition({1+i*width/_graphe.get_width(),1+j*height/_graphe.get_height()});
+                box.setPosition({(float)(1+i*width/_graphe.get_width()),(float)(1+j*height/_graphe.get_height())});
                 window.draw(box);
             }
         }

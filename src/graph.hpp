@@ -54,12 +54,12 @@ class Graph {
 private:
     unsigned int width_;
     unsigned int height_;
-    //std::vector<std::vector<std::unique_ptr<Cell>>> grille_;
+    std::vector<std::vector<std::unique_ptr<Cell>>> grille_;
 public:
     Graph(unsigned int width, unsigned int height);
     
     bool is_empty(const Position &pos) const;
-    // bool is_wall(const Position &pos) const;
+    bool is_wall(const Position &pos) const;
     // bool is_agent(const Position &pos) const;
     // int get_agent_id(const Position &pos) const;
     // std::pair<int,int> get_agent_pos(const int id) const;

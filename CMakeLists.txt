@@ -16,7 +16,7 @@ add_executable(
     main src/main.cpp
     src/graphismes.hh
     src/graphismes.cpp
-    src/graph.hh
+    src/graph.hpp
     src/graph.cpp
     
     )

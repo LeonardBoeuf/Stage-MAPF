@@ -1,6 +1,6 @@
 #pragma once
 #include <string>
-#include "graph.hh"
+#include "graph.hpp"
 
 
 class Grille_MAPF{

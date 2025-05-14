@@ -3,6 +3,7 @@
 
 int main()
 {
-    Grille_MAPF G(30);
-    G.run();
+    Graph G(50,40);
+    Grille_MAPF M(G);
+    M.run();
 }

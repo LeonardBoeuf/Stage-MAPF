@@ -2,19 +2,12 @@
 #include <string>
 #include "graph.hh"
 
-/*class Grille_MAPF{
-    public :
-    Grille_MAPF(Graph & g) : _graphe(g){}
-
-    private :
-    Graph _graphe;
-};*/
 
 class Grille_MAPF{
     public :
-    Grille_MAPF(int n) : _n(n){}
+    Grille_MAPF(Graph & g) : _graphe(g){}
     void run();
 
     private :
-    int _n;
+    Graph _graphe;
 };

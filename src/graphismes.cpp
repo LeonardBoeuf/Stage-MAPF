@@ -12,7 +12,7 @@ void Grille_MAPF::run(){
 
     while (window.isOpen())
     {
-        auto c = sf::Color(200,200,200); 
+        auto c = sf::Color(0,0,0); 
 
         while (const std::optional event = window.pollEvent())
         {
@@ -24,18 +24,16 @@ void Grille_MAPF::run(){
 
         window.clear(c);
 
-        for(int i=0;i<=_n;i++){
-            sf::RectangleShape line({(float)width, 1.f});
-            line.setFillColor(sf::Color(0,0,0)); 
-            line.setPosition({0,i*height/_n});
-            window.draw(line);
-        }
-        for(int i=0;i<=_n;i++){
-            sf::RectangleShape line({(float)height, 1.f});
-            line.setFillColor(sf::Color(0,0,0));
-            line.setPosition({i*width/_n,0});
-            line.rotate(sf::degrees(90));
-            window.draw(line);
+        for(int i=0;i<=_graphe.get_width();i++){
+            for(int j=0;j<=_graphe.get_height();j++){
+                sf::RectangleShape box({width/_graphe.get_width()-1, height/_graphe.get_height()-1});
+                if(_graphe.is_empty(Position(i,j)))
+                    box.setFillColor(sf::Color(200,200,200)); 
+                else 
+                    box.setFillColor(sf::Color(0,0,0)); 
+                box.setPosition({1+i*width/_graphe.get_width(),1+j*height/_graphe.get_height()});
+                window.draw(box);
+            }
         }
         
 

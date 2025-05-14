@@ -17,6 +17,7 @@ add_executable(
     src/graphismes.hh
     src/graphismes.cpp
     src/graph.hh
+    src/graph.cpp
     
     )
 target_compile_features(main PRIVATE cxx_std_17)

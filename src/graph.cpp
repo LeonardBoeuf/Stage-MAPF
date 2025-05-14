@@ -158,6 +158,75 @@ void Graph::run(){
     }
 }
 
+void Graph::run(
+    const Position &start,
+    const Position &goal,
+    std::function<unsigned int (const Position&)> h
+    ){
+    Graph::new_agent(start,1);
+    auto vect =Graph::a_star(start,goal,h);
+
+    auto window = sf::RenderWindow(sf::VideoMode({1920u, 1080u}), "Grille de MAPF");
+    window.setFramerateLimit(900);
+    sf::Clock clock; // starts the clock
+    int a=0;
+
+    sf::Vector2u size = window.getSize();
+    auto [width, height] = size;
+
+    while (window.isOpen())
+    {
+        auto c = sf::Color(0,0,0); 
+
+        
+
+        while (const std::optional event = window.pollEvent())
+        {
+            if (event->is<sf::Event::Closed>())
+            {
+                window.close();
+            }
+        }
+        if(clock.getElapsedTime()>sf::seconds(1.0f)and a<vect.size()){
+            clock.restart();
+            ++a;
+        }
+
+        window.clear(c);
+
+        for(int i=0;i<get_width();i++){
+            for(int j=0;j<get_height();j++){
+                sf::RectangleShape box({(float)(width/get_width()-1), (float)(height/get_height()-1)});
+                if(is_empty(Position(i,j))){
+                    auto beg=vect.end();
+                    for(int e = 0; e<a;++e){
+                        beg--;
+                    }
+                    if(Position(i,j)==goal){
+                        box.setFillColor(sf::Color(200,200,0)); 
+                    }
+                    else if(std::find(beg,vect.end(),Position(i,j))==vect.end()){
+                        box.setFillColor(sf::Color(200,200,200)); 
+
+                    }
+                    else box.setFillColor(sf::Color(0,200,0)); 
+                }
+                else if(is_agent(Position(i,j))){
+                    box.setFillColor(sf::Color(0,0,200)); 
+                }
+                else 
+                    box.setFillColor(sf::Color(0,0,0)); 
+                box.setPosition({(float)(1+i*width/get_width()),(float)(1+j*height/get_height())});
+                window.draw(box);
+            }
+        }
+        
+
+        window.display();
+    }
+    Graph::set_empty(start);
+}
+
 std::vector<Position> Graph::a_star(
     const Position &start,
     const Position &goal,

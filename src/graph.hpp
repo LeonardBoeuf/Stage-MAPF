@@ -77,6 +77,7 @@ public:
     // void move_agent(const Position &from, const Position &to);
 
     void run();
+    void run(const Position &start, const Position &goal, std::function<unsigned int (const Position&)> h);
     
     std::vector<Position> a_star(const Position &start, const Position &goal, std::function<unsigned int (const Position&)> h) const;
 };

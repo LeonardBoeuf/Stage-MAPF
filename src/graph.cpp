@@ -56,6 +56,10 @@ unsigned int Position::dist_eucl(const Position &pos) const noexcept {
     return square(x_ - pos.x_) + square(y_ - pos.y_);
 }
 
+std::function<unsigned int (const Position&)> Position::dist_eucl_to() const noexcept {
+    return [this](const Position &pos){return this->dist_eucl(pos);};
+}
+
 std::ostream& operator<<(std::ostream &stream, const Position &pos) {
     stream << "(" << pos.x_ << "," << pos.y_ << ")";
     return stream;

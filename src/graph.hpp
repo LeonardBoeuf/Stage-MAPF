@@ -43,6 +43,7 @@ public:
 
     static unsigned int dist_eucl(const Position &a, const Position &b) noexcept;
     unsigned int dist_eucl(const Position &pos) const noexcept;
+    std::function<unsigned int (const Position&)> dist_eucl_to() const noexcept;
 };
 
 

@@ -4,7 +4,7 @@
 int main()
 {
     Graph G(50,40);
-    G.run(Position(5,5),Position(2,3),[](const Position&pos){return pos.dist_eucl(Position(2,3));});
-    G.run(Position(0,0),Position(2,30),[](const Position&pos){return pos.dist_eucl(Position(2,30));});
+    G.run(Position(5,5),Position(2,3),Position(2,3).dist_eucl_to());
+    G.run(Position(0,0),Position(2,30),Position(2,30).dist_eucl_to());
 
 }

@@ -4,11 +4,45 @@
 #include <algorithm>
 #include <limits>
 #include <iostream>
+#include <random>
+#include <ctime>
 
 Agent::Agent(int id) noexcept : Cell(), id_(id) {}
 
 int Agent::get_id() const noexcept {
     return id_;
+}
+
+struct noeud
+{
+    int key;
+    Position val;
+    noeud* gauche;
+    noeud* droite;
+};
+
+using avl = noeud*;
+
+void init(avl & a){
+    a=nullptr;
+}
+
+void ajouter(avl & a, Position val, int key){
+    if(a==nullptr){
+        a=new(noeud);
+        a->key=key;
+        a->val=val;
+        a->droite=nullptr;
+        a->gauche=nullptr;
+    }
+    else{
+        if(key<=a->key){
+            ajouter(a->gauche,val,key);
+        }
+        else {
+            ajouter(a->droite,val,key);
+        }
+    }
 }
 
 
@@ -168,10 +202,36 @@ std::pair<int,int> Graph::pos_clicked(sf::Window & w){
     return std::pair<int,int>(x,y);
 }
 
+void Graph::make_lab(){
+    std::srand(std::time({}));
+    for (int i = 0; i < width_; i+=2)
+    {
+        for (int j = 0; j < height_; j+=2)
+        {
+            Graph::new_wall(Position(i,j));
+            std::vector<Position> neighboors;
+                if ((i +1 < width_) && (grille_[j][i+1]) == nullptr) {
+                    neighboors.push_back(Position(i+1,j));
+                }
+                if ((j +1 < height_) && (grille_[j+1][i]) == nullptr) {
+                    neighboors.push_back(Position(i,j+1));
+                }
+                if ((i > 0) && (grille_[j][j-1]) == nullptr) {
+                    neighboors.push_back(Position(i-1,j));
+                }
+                if ((j > 0) && (grille_[j-1][i]) == nullptr) {
+                    neighboors.push_back(Position(i,j-1));
+                }
+            int r=std::rand()%neighboors.size();
+            Graph::new_wall(neighboors[r]);
+        }
+    }
+    
+}
 
 std::pair<Position*,Position*> Graph::draw(){
     auto window = sf::RenderWindow(sf::VideoMode({1920u, 1080u}), "Grille de MAPF");
-    window.setFramerateLimit(144);
+    window.setFramerateLimit(1000);
     //sf::Clock clock; // starts the clock
     std::pair<Position*,Position*> ret=std::pair<Position*,Position*>(nullptr,nullptr);
     sf::Vector2u size = window.getSize();
@@ -253,7 +313,7 @@ void Graph::show_path(
     auto vect =Graph::a_star(start,goal,h);
 
     auto window = sf::RenderWindow(sf::VideoMode({1920u, 1080u}), "Grille de MAPF");
-    window.setFramerateLimit(144);
+    window.setFramerateLimit(1000);
     sf::Clock clock; // starts the clock
     int a=0;
     sf::Time t=sf::seconds(0.2f);
@@ -339,7 +399,7 @@ void Graph::show_thoughts(
     open_nodes.push(start);
     pos_in_open.push_back(start);
     auto window = sf::RenderWindow(sf::VideoMode({1920u, 1080u}), "Grille de MAPF");
-    window.setFramerateLimit(144);
+    window.setFramerateLimit(1000);
     sf::Clock clock; // starts the clock
     int a=0;
     sf::Time t=sf::seconds(0.2f);

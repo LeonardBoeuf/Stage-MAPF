@@ -3,7 +3,8 @@
 
 int main()
 {
-    Graph G(50,40);
+    Graph G(50,50);
+    G.make_lab();
     auto start=G.draw();
     Position a;
     Position b;

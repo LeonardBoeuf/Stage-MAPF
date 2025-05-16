@@ -87,6 +87,7 @@ public:
 
     std::pair<int,int> pos_clicked(sf::Window & w);
 
+    void make_lab();
     std::pair<Position*,Position*> draw();
     void show_path(const Position &start, const Position &goal, std::function<unsigned int (const Position&)> h);
     void show_thoughts(const Position &start, const Position &goal, std::function<unsigned int (const Position&)> h);

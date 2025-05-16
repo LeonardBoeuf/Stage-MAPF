@@ -4,7 +4,7 @@
 int main()
 {
     Graph G(50,40);
-    auto start=G.run();
+    auto start=G.draw();
     Position a;
     Position b;
     if(start.first ==nullptr){
@@ -19,6 +19,6 @@ int main()
     else {
         b=*start.second;
     }
-    G.run(a,b,[&b](const Position&pos){return pos.dist_eucl(b);});
+    G.show_thoughts(a,b,[&b](const Position&pos){return pos.dist_eucl(b);});
 
 }

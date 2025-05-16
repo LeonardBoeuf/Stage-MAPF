@@ -149,7 +149,7 @@ void Graph::new_agent(const unsigned int x, const unsigned int y, const int id) 
     grille_[y][x] = std::make_unique<Agent>(id);
 }
 
-std::pair<Position*,Position*> Graph::run(){
+std::pair<Position*,Position*> Graph::draw(){
     auto window = sf::RenderWindow(sf::VideoMode({1920u, 1080u}), "Grille de MAPF");
     window.setFramerateLimit(144);
     //sf::Clock clock; // starts the clock
@@ -233,7 +233,7 @@ std::pair<Position*,Position*> Graph::run(){
     return ret;
 }
 
-void Graph::run(
+void Graph::show_path(
     const Position &start,
     const Position &goal,
     std::function<unsigned int (const Position&)> h
@@ -318,6 +318,161 @@ void Graph::run(
     Graph::set_empty(start);
 }
 
+void Graph::show_thoughts(
+    const Position &start,
+    const Position &goal,
+    std::function<unsigned int (const Position&)> h
+    ){
+    Graph::new_agent(start,1);
+
+    std::map<Position,Position> cameFrom;
+    std::vector<std::vector<unsigned int>> gScore(height_, std::vector<unsigned int>(width_, std::numeric_limits<unsigned int>::max()));
+    std::vector<std::vector<unsigned int>> fScore(height_, std::vector<unsigned int>(width_, std::numeric_limits<unsigned int>::max()));
+    gScore[start.get_y()][start.get_x()] = 0;
+    fScore[start.get_y()][start.get_x()] = h(start);
+
+    // Init priority queue
+    auto cmp = [fScore](const Position &left, const Position &right) {
+        return fScore[left.get_y()][left.get_x()] < fScore[right.get_y()][right.get_x()];
+    };
+    std::priority_queue<Position, std::vector<Position>, decltype(cmp)> open_nodes(cmp);
+    std::vector<Position> pos_in_open;
+    std::vector<Position> seen;
+    open_nodes.push(start);
+    pos_in_open.push_back(start);
+    auto window = sf::RenderWindow(sf::VideoMode({1920u, 1080u}), "Grille de MAPF");
+    window.setFramerateLimit(140);
+    sf::Clock clock; // starts the clock
+    int a=0;
+    sf::Time t=sf::seconds(0.2f);
+
+    sf::Vector2u size = window.getSize();
+    auto [width, height] = size;
+    bool trouve = false;
+    std::vector<Position> vect;
+    while (window.isOpen())
+    {
+        auto c = sf::Color(0,0,0); 
+        
+        if (!open_nodes.empty() and !trouve) {
+            Position current = open_nodes.top();
+            seen.push_back(current);
+             //std::cout << "Next : " << current << std::endl;
+            if(current==goal){
+                //std::cout<<cameFrom[current];
+                trouve=true;
+                vect.push_back(current);
+                while (current != start) {
+                    current = cameFrom[current]; //si c'est current, cause un core dump, si current est remplacé par test, pas de problème.
+                    vect.push_back(current);
+                }
+            }
+            else{
+                open_nodes.pop();
+                pos_in_open.erase(std::find(pos_in_open.begin(),pos_in_open.end(),current));
+
+                std::vector<Position> neighboors;
+                if ((current.get_x() +1 < width_) && (grille_[current.get_y()][current.get_x()+1]) == nullptr) {
+                    neighboors.push_back(Position(current.get_x()+1,current.get_y()));
+                }
+                if ((current.get_y() +1 < height_) && (grille_[current.get_y()+1][current.get_x()]) == nullptr) {
+                    neighboors.push_back(Position(current.get_x(),current.get_y()+1));
+                }
+                if ((current.get_x() > 0) && (grille_[current.get_y()][current.get_x()-1]) == nullptr) {
+                    neighboors.push_back(Position(current.get_x()-1,current.get_y()));
+                }
+                if ((current.get_y() > 0) && (grille_[current.get_y()-1][current.get_x()]) == nullptr) {
+                    neighboors.push_back(Position(current.get_x(),current.get_y()-1));
+                }
+                for (Position &npos : neighboors) {
+                    unsigned int new_score = gScore[current.get_y()][current.get_x()];
+                    if (new_score < gScore[npos.get_y()][npos.get_x()]) {
+                        //cameFrom[npos.get_y()][npos.get_x()] = current;
+                        //cameFrom[npos] = current;
+                        cameFrom[npos] = current;
+                        gScore[npos.get_y()][npos.get_x()] = new_score;
+                        fScore[npos.get_y()][npos.get_x()] = new_score + h(npos);
+                        
+                        auto is_in_open = std::find(pos_in_open.begin(),pos_in_open.end(),npos);
+                        if (is_in_open == pos_in_open.end()) {
+                            open_nodes.push(npos);
+                            pos_in_open.push_back(npos);
+                        }
+                    }
+                }
+            }
+            
+        }
+        while (const std::optional event = window.pollEvent())
+        {
+            if (event->is<sf::Event::Closed>())
+            {
+                window.close();
+            }
+            if (sf::Mouse::isButtonPressed(sf::Mouse::Button::Left))
+            {
+            auto [m_x, m_y] = sf::Mouse::getPosition(window);
+            int x=m_x/(width/width_);
+            int y=m_y/(height/height_);
+            if (x>width_-1){
+                x=width_-1;
+            }
+            if (y>height_-1){
+                y=height_-1;
+            }
+            Graph::new_wall(Position(x,y));
+            }
+
+        }
+        /*if(clock.getElapsedTime()> t and a<vect.size()){
+            clock.restart();
+            ++a;
+            t=t*0.98f;
+        }*/
+
+        window.clear(c);
+
+        for(int i=0;i<width_;i++){
+            for(int j=0;j<height_;j++){
+                sf::RectangleShape box({(float)(width/width_-1), (float)(height/height_-1)});
+                if(is_empty(Position(i,j))){
+                    auto beg=vect.end();
+                    for(int e = 0; e<a;++e){
+                        beg--;
+                    }
+                    if(Position(i,j)==goal){
+                        box.setFillColor(sf::Color(200,200,0)); //goal
+                    }
+                    else if(std::find(vect.begin(),vect.end(),Position(i,j))!=vect.end()){//case du chemin
+                        box.setFillColor(sf::Color(0,200,0)); 
+                    }
+                    /*else if(trouve and std::find(beg,vect.end(),Position(i,j))!=vect.end()){//case du chemin
+                        box.setFillColor(sf::Color(0,200,0)); 
+
+                    }*/
+                    else if(std::find(seen.begin(),seen.end(),Position(i,j))!=seen.end()){//case vue
+                        box.setFillColor(sf::Color(250,150,150)); 
+                    }
+                    
+                    else box.setFillColor(sf::Color(200,200,200)); //case vide
+                }
+                else if(is_agent(Position(i,j))){
+                    box.setFillColor(sf::Color(0,0,200)); 
+                }
+                else 
+                    box.setFillColor(sf::Color(0,0,0)); 
+                box.setPosition({(float)(1+i*(width/width_)),(float)(1+j*(height/height_))});
+                window.draw(box);
+            }
+        }
+        
+
+        window.display();
+    }
+    Graph::set_empty(start);
+}
+
+
 std::vector<Position> Graph::a_star(
     const Position &start,
     const Position &goal,
@@ -388,5 +543,7 @@ std::vector<Position> Graph::a_star(
         }
     }
 
+
+    
     return std::vector<Position>();
 }

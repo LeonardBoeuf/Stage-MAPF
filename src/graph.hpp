@@ -84,8 +84,10 @@ public:
     void new_agent(const unsigned int x, const unsigned int y, const int id);
     // void move_agent(const Position &from, const Position &to);
 
-    std::pair<Position*,Position*> run();
-    void run(const Position &start, const Position &goal, std::function<unsigned int (const Position&)> h);
+    std::pair<Position*,Position*> draw();
+    void show_path(const Position &start, const Position &goal, std::function<unsigned int (const Position&)> h);
+    void show_thoughts(const Position &start, const Position &goal, std::function<unsigned int (const Position&)> h);
+
     
     std::vector<Position> a_star(const Position &start, const Position &goal, std::function<unsigned int (const Position&)> h) const;
 };

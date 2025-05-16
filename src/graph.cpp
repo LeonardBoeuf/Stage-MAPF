@@ -3,7 +3,6 @@
 #include <map>
 #include <algorithm>
 #include <limits>
-#include <SFML/Graphics.hpp>
 #include <iostream>
 
 Agent::Agent(int id) noexcept : Cell(), id_(id) {}
@@ -148,6 +147,27 @@ void Graph::new_agent(const unsigned int x, const unsigned int y, const int id) 
     if (x >= width_ || y >= height_) throw std::out_of_range("Tried to place outside the graph");
     grille_[y][x] = std::make_unique<Agent>(id);
 }
+std::pair<int,int> Graph::pos_clicked(sf::Window & w){
+    sf::Vector2u size = w.getSize();
+    auto [width, height] = size;
+    auto [m_x, m_y] = sf::Mouse::getPosition(w);
+    int x=m_x/(width/width_);
+    int y=m_y/(height/height_);
+    if (x>width_-1){
+        x=width_-1;
+    }
+    if (y>height_-1){
+        y=height_-1;
+    }
+    if (x<0){
+        x=0;    
+    }
+    if (y<0){
+        y=0;
+    }
+    return std::pair<int,int>(x,y);
+}
+
 
 std::pair<Position*,Position*> Graph::draw(){
     auto window = sf::RenderWindow(sf::VideoMode({1920u, 1080u}), "Grille de MAPF");
@@ -169,41 +189,32 @@ std::pair<Position*,Position*> Graph::draw(){
             }
             if (sf::Mouse::isButtonPressed(sf::Mouse::Button::Left))
             {
-            auto [m_x, m_y] = sf::Mouse::getPosition(window);
-            int x=m_x/(width/width_);
-            int y=m_y/(height/height_);
-            if (x>width_-1){
-                x=width_-1;
-            }
-            if (y>height_-1){
-                y=height_-1;
-            }
-            if (x<0){
-                x=0;    
-            }
-            if (y<0){
-                y=0;
-            }
+            auto [x,y]=Graph::pos_clicked(window);
             Graph::new_wall(Position(x,y));
             }
             if (sf::Mouse::isButtonPressed(sf::Mouse::Button::Right))
             {
-            auto [m_x, m_y] = sf::Mouse::getPosition(window);
-            int x=m_x/(width/width_);
-            int y=m_y/(height/height_);
-            if (x>width_-1){
-                x=width_-1;
+                auto [x,y]=Graph::pos_clicked(window);
+                Graph::set_empty(Position(x,y));
+                if(ret.second!=nullptr and Position(x,y)==*ret.second){
+                    delete ret.second;
+                    ret.second=nullptr;
+                }
+                if(ret.first!=nullptr and Position(x,y)==*ret.first){
+                    delete ret.first;
+                    ret.first=nullptr;
+                }
             }
-            if (y>height_-1){
-                y=height_-1;
-            }
+            if (sf::Mouse::isButtonPressed(sf::Mouse::Button::Middle))
+            {
+            auto [x,y]=Graph::pos_clicked(window);
             if(ret.first==nullptr){
-                ret.first=new Position(x,y);
-                Graph::new_agent(*ret.first,1);
-            }
+                    ret.first=new Position(x,y);
+                    Graph::new_agent(*ret.first,1);
+                }
             else if(ret.second==nullptr){
                 if(Position(x,y)!=*ret.first)
-                    ret.second=new Position(x,y);
+                ret.second=new Position(x,y);
             }
             }
         }
@@ -242,7 +253,7 @@ void Graph::show_path(
     auto vect =Graph::a_star(start,goal,h);
 
     auto window = sf::RenderWindow(sf::VideoMode({1920u, 1080u}), "Grille de MAPF");
-    window.setFramerateLimit(900);
+    window.setFramerateLimit(144);
     sf::Clock clock; // starts the clock
     int a=0;
     sf::Time t=sf::seconds(0.2f);
@@ -261,19 +272,6 @@ void Graph::show_path(
             if (event->is<sf::Event::Closed>())
             {
                 window.close();
-            }
-            if (sf::Mouse::isButtonPressed(sf::Mouse::Button::Left))
-            {
-            auto [m_x, m_y] = sf::Mouse::getPosition(window);
-            int x=m_x/(width/width_);
-            int y=m_y/(height/height_);
-            if (x>width_-1){
-                x=width_-1;
-            }
-            if (y>height_-1){
-                y=height_-1;
-            }
-            Graph::new_wall(Position(x,y));
             }
 
         }
@@ -341,7 +339,7 @@ void Graph::show_thoughts(
     open_nodes.push(start);
     pos_in_open.push_back(start);
     auto window = sf::RenderWindow(sf::VideoMode({1920u, 1080u}), "Grille de MAPF");
-    window.setFramerateLimit(140);
+    window.setFramerateLimit(144);
     sf::Clock clock; // starts the clock
     int a=0;
     sf::Time t=sf::seconds(0.2f);
@@ -408,19 +406,6 @@ void Graph::show_thoughts(
             if (event->is<sf::Event::Closed>())
             {
                 window.close();
-            }
-            if (sf::Mouse::isButtonPressed(sf::Mouse::Button::Left))
-            {
-            auto [m_x, m_y] = sf::Mouse::getPosition(window);
-            int x=m_x/(width/width_);
-            int y=m_y/(height/height_);
-            if (x>width_-1){
-                x=width_-1;
-            }
-            if (y>height_-1){
-                y=height_-1;
-            }
-            Graph::new_wall(Position(x,y));
             }
 
         }

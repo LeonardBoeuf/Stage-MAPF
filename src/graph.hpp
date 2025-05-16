@@ -1,5 +1,6 @@
 #pragma once
 
+#include <SFML/Graphics.hpp>
 #include <memory>
 #include <vector>
 #include <functional>
@@ -83,6 +84,8 @@ public:
     void new_agent(const Position &pos, const int id);
     void new_agent(const unsigned int x, const unsigned int y, const int id);
     // void move_agent(const Position &from, const Position &to);
+
+    std::pair<int,int> pos_clicked(sf::Window & w);
 
     std::pair<Position*,Position*> draw();
     void show_path(const Position &start, const Position &goal, std::function<unsigned int (const Position&)> h);

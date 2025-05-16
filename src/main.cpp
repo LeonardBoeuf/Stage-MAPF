@@ -19,6 +19,7 @@ int main()
     else {
         b=*start.second;
     }
+    G.show_path(a,b,[&b](const Position&pos){return pos.dist_eucl(b);});
     G.show_thoughts(a,b,[&b](const Position&pos){return pos.dist_eucl(b);});
-
+    return 0;
 }

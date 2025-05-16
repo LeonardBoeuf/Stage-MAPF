@@ -7,8 +7,10 @@ class PriorityQueueException : public std::exception {
 private:
     std::string error_;
 public:
-    PriorityQueueException(const std::string &error) noexcept;
-    virtual char const* what() const throw();
+    PriorityQueueException(const std::string &error) noexcept: error_(error) {}
+    virtual char const* what() const throw() {
+        return error_.c_str();
+    }
 };
 
 template <class T>
@@ -29,6 +31,7 @@ public:
 
     ~PriorityQueue() noexcept;
 
+    bool is_empty() const noexcept;
     void push_back(const T&, const unsigned int) noexcept;
     T& top() const;
     void pop_front();
@@ -48,6 +51,10 @@ template <class T> PriorityQueue<T>::~PriorityQueue() noexcept {
         front_ = front_->next_;
         delete p;
     }
+}
+
+template <class T> bool PriorityQueue<T>::is_empty() const noexcept {
+    return front_ == nullptr;
 }
 
 template <class T> void PriorityQueue<T>::push_back(const T &value, const unsigned int key) noexcept {

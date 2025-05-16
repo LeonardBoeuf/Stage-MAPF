@@ -6,6 +6,7 @@
 #include <iostream>
 #include <random>
 #include <ctime>
+#include "priority_queue.hh"
 
 Agent::Agent(int id) noexcept : Cell(), id_(id) {}
 
@@ -390,14 +391,9 @@ void Graph::show_thoughts(
     fScore[start.get_y()][start.get_x()] = h(start);
 
     // Init priority queue
-    auto cmp = [fScore](const Position &left, const Position &right) {
-        return fScore[left.get_y()][left.get_x()] < fScore[right.get_y()][right.get_x()];
-    };
-    std::priority_queue<Position, std::vector<Position>, decltype(cmp)> open_nodes(cmp);
-    std::vector<Position> pos_in_open;
+    PriorityQueue<Position> open_nodes;
     std::vector<Position> seen;
-    open_nodes.push(start);
-    pos_in_open.push_back(start);
+    open_nodes.push_back(start,fScore[start.get_y()][start.get_x()]);
     auto window = sf::RenderWindow(sf::VideoMode({1920u, 1080u}), "Grille de MAPF");
     window.setFramerateLimit(1000);
     sf::Clock clock; // starts the clock
@@ -412,12 +408,10 @@ void Graph::show_thoughts(
     {
         auto c = sf::Color(0,0,0); 
         
-        if (!open_nodes.empty() and !trouve) {
+        if (!open_nodes.is_empty() and !trouve) {
             Position current = open_nodes.top();
             seen.push_back(current);
-             //std::cout << "Next : " << current << std::endl;
             if(current==goal){
-                //std::cout<<cameFrom[current];
                 trouve=true;
                 vect.push_back(current);
                 while (current != start) {
@@ -426,8 +420,7 @@ void Graph::show_thoughts(
                 }
             }
             else{
-                open_nodes.pop();
-                pos_in_open.erase(std::find(pos_in_open.begin(),pos_in_open.end(),current));
+                open_nodes.pop_front();
 
                 std::vector<Position> neighboors;
                 if ((current.get_x() +1 < width_) && (grille_[current.get_y()][current.get_x()+1]) == nullptr) {
@@ -443,18 +436,14 @@ void Graph::show_thoughts(
                     neighboors.push_back(Position(current.get_x(),current.get_y()-1));
                 }
                 for (Position &npos : neighboors) {
-                    unsigned int new_score = gScore[current.get_y()][current.get_x()];
+                    unsigned int new_score = gScore[current.get_y()][current.get_x()] +1;
                     if (new_score < gScore[npos.get_y()][npos.get_x()]) {
-                        //cameFrom[npos.get_y()][npos.get_x()] = current;
-                        //cameFrom[npos] = current;
                         cameFrom[npos] = current;
                         gScore[npos.get_y()][npos.get_x()] = new_score;
                         fScore[npos.get_y()][npos.get_x()] = new_score + h(npos);
                         
-                        auto is_in_open = std::find(pos_in_open.begin(),pos_in_open.end(),npos);
-                        if (is_in_open == pos_in_open.end()) {
-                            open_nodes.push(npos);
-                            pos_in_open.push_back(npos);
+                        if (!open_nodes.find_if_in(npos)) {
+                            open_nodes.push_back(npos,fScore[npos.get_y()][npos.get_x()]);
                         }
                     }
                 }
@@ -525,7 +514,6 @@ std::vector<Position> Graph::a_star(
     ) const {
     
     // Preceding node on the shortest path
-    // std::vector<std::vector<Position>> cameFrom(height_, std::vector<Position>(width_, Position(0,0)));
     std::map<Position,Position> cameFrom;
     // Current cost
     std::vector<std::vector<unsigned int>> gScore(height_, std::vector<unsigned int>(width_, std::numeric_limits<unsigned int>::max()));
@@ -535,16 +523,11 @@ std::vector<Position> Graph::a_star(
     fScore[start.get_y()][start.get_x()] = h(start);
 
     // Init priority queue
-    auto cmp = [fScore](const Position &left, const Position &right) {
-        return fScore[left.get_y()][left.get_x()] < fScore[right.get_y()][right.get_x()];
-    };
-    std::priority_queue<Position, std::vector<Position>, decltype(cmp)> open_nodes(cmp);
-    std::vector<Position> pos_in_open;
-    open_nodes.push(start);
-    pos_in_open.push_back(start);
-    while (!open_nodes.empty()) {
+    PriorityQueue<Position> open_nodes;
+    open_nodes.push_back(start,fScore[start.get_y()][start.get_x()]);
+    
+    while (!open_nodes.is_empty()) {
         Position current = open_nodes.top();
-        // std::cout << "Next : " << current << std::endl;
 
         if (current == goal) {
             std::vector<Position> path;
@@ -555,8 +538,7 @@ std::vector<Position> Graph::a_star(
             }
             return path;
         }
-        open_nodes.pop();
-        pos_in_open.erase(std::find(pos_in_open.begin(),pos_in_open.end(),current));
+        open_nodes.pop_front();
 
         std::vector<Position> neighboors;
         if ((current.get_x() +1 < width_) && (grille_[current.get_y()][current.get_x()+1]) == nullptr) {
@@ -572,18 +554,13 @@ std::vector<Position> Graph::a_star(
             neighboors.push_back(Position(current.get_x(),current.get_y()-1));
         }
         for (Position &npos : neighboors) {
-            unsigned int new_score = gScore[current.get_y()][current.get_x()];
+            unsigned int new_score = gScore[current.get_y()][current.get_x()] +1;
             if (new_score < gScore[npos.get_y()][npos.get_x()]) {
-                // cameFrom[npos.get_y()][npos.get_x()] = current;
                 cameFrom[npos] = current;
                 gScore[npos.get_y()][npos.get_x()] = new_score;
                 fScore[npos.get_y()][npos.get_x()] = new_score + h(npos);
                 
-                auto is_in_open = std::find(pos_in_open.begin(),pos_in_open.end(),npos);
-                if (is_in_open == pos_in_open.end()) {
-                    open_nodes.push(npos);
-                    pos_in_open.push_back(npos);
-                }
+                if (!open_nodes.find_if_in(npos)) open_nodes.push_back(npos, fScore[npos.get_y()][npos.get_x()]);
             }
         }
     }

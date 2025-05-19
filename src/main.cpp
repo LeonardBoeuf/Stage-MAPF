@@ -3,8 +3,8 @@
 
 int main()
 {
-    Graph G(50,50);
-    // G.make_lab();
+    Graph G(100,100);
+    G.make_lab();
     auto start=G.draw();
     Position a;
     Position b;
@@ -20,7 +20,7 @@ int main()
     else {
         b=*start.second;
     }
-    G.show_path(a,b,[&b](const Position&pos){return pos.dist_eucl(b);});
-    G.show_thoughts(a,b,[&b](const Position&pos){return pos.dist_eucl(b);});
+    G.show_path(a,b,b.dist_taxicab_to());
+    G.show_thoughts(a,b,b.dist_taxicab_to());
     return 0;
 }

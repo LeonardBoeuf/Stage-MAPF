@@ -8,6 +8,8 @@
 #include <ctime>
 #include "priority_queue.hh"
 
+float framerate=900;
+
 Agent::Agent(int id) noexcept : Cell(), id_(id) {}
 
 int Agent::get_id() const noexcept {
@@ -232,7 +234,7 @@ void Graph::make_lab(){
 
 std::pair<Position*,Position*> Graph::draw(){
     auto window = sf::RenderWindow(sf::VideoMode({1920u, 1080u}), "Grille de MAPF");
-    window.setFramerateLimit(1000);
+    window.setFramerateLimit(framerate);
     //sf::Clock clock; // starts the clock
     std::pair<Position*,Position*> ret=std::pair<Position*,Position*>(nullptr,nullptr);
     sf::Vector2u size = window.getSize();
@@ -314,7 +316,7 @@ void Graph::show_path(
     auto vect =Graph::a_star(start,goal,h);
 
     auto window = sf::RenderWindow(sf::VideoMode({1920u, 1080u}), "Grille de MAPF");
-    window.setFramerateLimit(1000);
+    window.setFramerateLimit(framerate);
     sf::Clock clock; // starts the clock
     int a=0;
     sf::Time t=sf::seconds(0.2f);
@@ -395,7 +397,7 @@ void Graph::show_thoughts(
     std::vector<Position> seen;
     open_nodes.push_back(start,fScore[start.get_y()][start.get_x()]);
     auto window = sf::RenderWindow(sf::VideoMode({1920u, 1080u}), "Grille de MAPF");
-    window.setFramerateLimit(1000);
+    window.setFramerateLimit(framerate);
     sf::Clock clock; // starts the clock
     int a=0;
     sf::Time t=sf::seconds(0.2f);
@@ -465,7 +467,7 @@ void Graph::show_thoughts(
         }*/
 
         window.clear(c);
-
+        int max=fScore[start.get_y()][start.get_x()];
         for(int i=0;i<width_;i++){
             for(int j=0;j<height_;j++){
                 sf::RectangleShape box({(float)(width/width_-1), (float)(height/height_-1)});
@@ -485,7 +487,10 @@ void Graph::show_thoughts(
 
                     }*/
                     else if(std::find(seen.begin(),seen.end(),Position(i,j))!=seen.end()){//case vue
-                        box.setFillColor(sf::Color(250,150,150)); 
+                        if(fScore[j][i]>max){
+                            max=fScore[j][i];
+                        }
+                        box.setFillColor(sf::Color((255*gScore[j][i]/max),150,150));
                     }
                     
                     else box.setFillColor(sf::Color(200,200,200)); //case vide

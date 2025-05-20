@@ -1,4 +1,4 @@
-#include "Position.hpp"
+#include "position.hpp"
 
 Agent::Agent(int id) noexcept : Cell(), id_(id) {}
 

@@ -5,7 +5,7 @@
 #include <vector>
 #include <exception>
 
-#include "Position.hpp"
+#include "position.hpp"
 
 
 
@@ -52,4 +52,5 @@ public:
 
     
     std::vector<Position> a_star(const Position &start, const Position &goal, std::function<unsigned int (const Position&)> h) const;
+    std::vector<std::vector<Position>> icst(const std::vector<Position> &starts, const std::vector<Position> &goals, const float maxComputeTime) const;
 };

@@ -7,6 +7,7 @@
 #include <random>
 #include <ctime>
 #include "priority_queue.hh"
+#include "icst.hpp"
 
 float framerate=900;
 int etapes_par_frames = 4;
@@ -502,4 +503,30 @@ std::vector<Position> Graph::a_star(
 
     
     return std::vector<Position>();
+}
+
+
+std::vector<std::vector<Position>> Graph::icst(const std::vector<Position> &starts, const std::vector<Position> &goals, const float maxComputeTime) const {
+    // Check validity of input
+    unsigned int k = starts.size();
+    if (k == 0 || goals.size() != k) return std::vector<std::vector<Position>>(); // throw exception instead ?
+
+    // A_star all agents
+    std::vector<std::vector<Position>> a_star_paths(k);
+    std::vector<unsigned int> a_star_costs(k);
+    for(int i(0); i<k; ++i) {
+        a_star_paths.push_back(this->a_star(starts[i],goals[i],goals[i].dist_taxicab_to()));
+        if (a_star_paths[i].size() <= 0) return std::vector<std::vector<Position>>(); // No solution
+        a_star_costs.push_back(a_star_costs.size());
+    }
+
+    // Init ICST (Increasing Cost Search Tree)
+    ICST icst(a_star_costs);
+    
+    sf::Time maxComputeTime_(sf::seconds(maxComputeTime));
+    sf::Clock timer;
+    while (timer.getElapsedTime() < maxComputeTime_) {
+        std::vector<unsigned int> icst_node(icst.next());
+        
+    }
 }

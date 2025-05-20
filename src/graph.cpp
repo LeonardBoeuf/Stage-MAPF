@@ -9,114 +9,7 @@
 #include "priority_queue.hh"
 
 float framerate=900;
-
-Agent::Agent(int id) noexcept : Cell(), id_(id) {}
-
-int Agent::get_id() const noexcept {
-    return id_;
-}
-
-struct noeud
-{
-    int key;
-    Position val;
-    noeud* gauche;
-    noeud* droite;
-};
-
-using avl = noeud*;
-
-void init(avl & a){
-    a=nullptr;
-}
-
-void ajouter(avl & a, Position val, int key){
-    if(a==nullptr){
-        a=new(noeud);
-        a->key=key;
-        a->val=val;
-        a->droite=nullptr;
-        a->gauche=nullptr;
-    }
-    else{
-        if(key<=a->key){
-            ajouter(a->gauche,val,key);
-        }
-        else {
-            ajouter(a->droite,val,key);
-        }
-    }
-}
-
-
-Position::Position() noexcept : x_(-1), y_(-1) {}
-
-Position::Position(unsigned int x, unsigned int y) noexcept : x_(x), y_(y) {}
-
-// void Position::set_x(unsigned int x) noexcept {
-//     x_ = x;
-// }
-
-// void Position::set_y(unsigned int y) noexcept {
-//     y_ = y;
-// }
-
-unsigned int Position::get_x() const noexcept {
-    return x_;
-}
-
-unsigned int Position::get_y() const noexcept {
-    return y_;
-}
-
-bool Position::operator==(const Position &pos) const noexcept {
-    return x_ == pos.x_ && y_ == pos.y_;
-}
-
-bool Position::operator!=(const Position &pos) const noexcept {
-    return !operator==(pos);
-}
-
-bool Position::operator<(const Position &pos) const noexcept {
-    return x_ < pos.x_ || (x_ == pos.x_ && y_ < pos.y_);
-}
-
-unsigned int square(unsigned int x) noexcept {
-    return x*x;
-}
-
-unsigned int Position::dist_eucl(const Position &a, const Position &b) noexcept {
-    return a.dist_eucl(b);
-}
-
-unsigned int Position::dist_eucl(const Position &pos) const noexcept {
-    unsigned int dx(x_ > pos.x_ ? x_ - pos.x_ : pos.x_ - x_);
-    unsigned int dy(y_ > pos.y_ ? y_ - pos.y_ : pos.y_ - y_);
-    return square(dx) + square(dy);
-}
-
-std::function<unsigned int (const Position&)> Position::dist_eucl_to() const noexcept {
-    return [this](const Position &pos){return this->dist_eucl(pos);};
-}
-
-unsigned int Position::dist_taxicab(const Position &a, const Position &b) noexcept {
-    return a.dist_taxicab(b);
-}
-
-unsigned int Position::dist_taxicab(const Position &pos) const noexcept {
-    unsigned int dx(x_ > pos.x_ ? x_ - pos.x_ : pos.x_ - x_);
-    unsigned int dy(y_ > pos.y_ ? y_ - pos.y_ : pos.y_ - y_);
-    return dx + dy;
-}
-
-std::function<unsigned int (const Position&)> Position::dist_taxicab_to() const noexcept {
-    return [this](const Position &pos){return this->dist_taxicab(pos);};
-}
-
-std::ostream& operator<<(std::ostream &stream, const Position &pos) {
-    stream << "(" << pos.x_ << "," << pos.y_ << ")";
-    return stream;
-}
+int etapes_par_frames = 4;
 
 
 
@@ -232,11 +125,11 @@ void Graph::make_lab(){
     
 }
 
-std::pair<Position*,Position*> Graph::draw(){
+StartsAndGoals Graph::draw(){
     auto window = sf::RenderWindow(sf::VideoMode({1920u, 1080u}), "Grille de MAPF");
     window.setFramerateLimit(framerate);
     //sf::Clock clock; // starts the clock
-    std::pair<Position*,Position*> ret=std::pair<Position*,Position*>(nullptr,nullptr);
+    StartsAndGoals ret=StartsAndGoals (10,std::pair<Position*,Position*>(nullptr,nullptr));
     sf::Vector2u size = window.getSize();
     auto [width, height] = size;
 
@@ -259,25 +152,56 @@ std::pair<Position*,Position*> Graph::draw(){
             {
                 auto [x,y]=Graph::pos_clicked(window);
                 Graph::set_empty(Position(x,y));
-                if(ret.second!=nullptr and Position(x,y)==*ret.second){
-                    delete ret.second;
-                    ret.second=nullptr;
+                for(int i=0;i<10;++i){
+                    if(ret[i].second!=nullptr and Position(x,y)==*ret[i].second){
+                        delete ret[i].second;
+                        ret[i].second=nullptr;
+                    }
+                    if(ret[i].first!=nullptr and Position(x,y)==*ret[i].first){
+                        delete ret[i].first;
+                        ret[i].first=nullptr;
+                    }
                 }
-                if(ret.first!=nullptr and Position(x,y)==*ret.first){
-                    delete ret.first;
-                    ret.first=nullptr;
-                }
+                
             }
-            if (sf::Mouse::isButtonPressed(sf::Mouse::Button::Middle))
+            int num_pressed=-1;
+            if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Num1)){
+                num_pressed=1;
+            }
+            else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Num2)){
+                num_pressed=2;
+            }
+            else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Num3)){
+                num_pressed=3;
+            }
+            else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Num4)){
+                num_pressed=4;
+            }
+            else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Num5)){
+                num_pressed=5;
+            }
+            else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Num6)){
+                num_pressed=6;
+            }
+            else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Num7)){
+                num_pressed=7;
+            }
+            else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Num8)){
+                num_pressed=8;
+            }
+            else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Num9)){
+                num_pressed=9;
+            }
+            if (num_pressed!=-1)
             {
             auto [x,y]=Graph::pos_clicked(window);
-            if(ret.first==nullptr){
-                    ret.first=new Position(x,y);
-                    Graph::new_agent(*ret.first,1);
+            if(ret[num_pressed].first==nullptr){
+                    ret[num_pressed].first=new Position(x,y);
+                    Graph::new_agent(*ret[num_pressed].first,num_pressed);
                 }
-            else if(ret.second==nullptr){
-                if(Position(x,y)!=*ret.first)
-                ret.second=new Position(x,y);
+            else if(ret[num_pressed].second==nullptr){
+                if(Position(x,y)!=*ret[num_pressed].first)
+                ret[num_pressed].second=new Position(x,y);
             }
             }
         }
@@ -289,8 +213,10 @@ std::pair<Position*,Position*> Graph::draw(){
                 sf::RectangleShape box({(float)(width/get_width()-1), (float)(height/get_height()-1)});
                 if(is_empty(Position(i,j))){
                     box.setFillColor(sf::Color(200,200,200)); 
-                    if(ret.second!=nullptr and Position(i,j)==*ret.second)
-                        box.setFillColor(sf::Color(200,200,0)); 
+                    for(int a=0; a<10;a++){
+                        if(ret[a].second!=nullptr and Position(i,j)==*ret[a].second)
+                            box.setFillColor(sf::Color(25*a,200,0)); 
+                    }                    
                 }
                 else if(is_agent(Position(i,j)))
                         box.setFillColor(sf::Color(0,0,200));
@@ -410,7 +336,8 @@ void Graph::show_thoughts(
     {
         auto c = sf::Color(0,0,0); 
         
-        if (!open_nodes.is_empty() and !trouve) {
+        for(int i=0;i<etapes_par_frames;++i){
+            if (!open_nodes.is_empty() and !trouve) {
             Position current = open_nodes.top();
             seen.push_back(current);
             if(current==goal){
@@ -452,6 +379,8 @@ void Graph::show_thoughts(
             }
             
         }
+        }
+            
         while (const std::optional event = window.pollEvent())
         {
             if (event->is<sf::Event::Closed>())

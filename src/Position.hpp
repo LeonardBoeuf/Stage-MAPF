@@ -1,0 +1,48 @@
+#pragma once
+#include <iostream>
+#include <functional>
+
+
+class Cell {
+public:
+    virtual ~Cell() = default;
+};
+
+class Wall : public Cell {};
+class Agent : public Cell {
+private:
+    int id_;
+public:
+    Agent(int id) noexcept;
+
+    int get_id() const noexcept;
+};
+
+class Position {
+private:
+    unsigned int x_;
+    unsigned int y_;
+public:
+    // For map
+    Position() noexcept;
+    Position(unsigned int x, unsigned int y) noexcept;
+    // void set_x(unsigned int x) noexcept;
+    // void set_y(unsigned int y) noexcept;
+    unsigned int get_x() const noexcept;
+    unsigned int get_y() const noexcept;
+
+    bool operator==(const Position &pos) const noexcept;
+    bool operator!=(const Position &pos) const noexcept;
+    friend std::ostream& operator<<(std::ostream &stream, const Position &pos);
+
+    // For map
+    bool operator<(const Position &pos) const noexcept;
+
+    static unsigned int dist_eucl(const Position &a, const Position &b) noexcept;
+    unsigned int dist_eucl(const Position &pos) const noexcept;
+    std::function<unsigned int (const Position&)> dist_eucl_to() const noexcept;
+
+    static unsigned int dist_taxicab(const Position &a, const Position &b) noexcept;
+    unsigned int dist_taxicab(const Position &pos) const noexcept;
+    std::function<unsigned int (const Position&)> dist_taxicab_to() const noexcept;
+};

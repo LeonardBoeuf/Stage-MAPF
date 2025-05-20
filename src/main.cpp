@@ -8,19 +8,18 @@ int main()
     auto start=G.draw();
     Position a;
     Position b;
-    if(start.first ==nullptr){
-        a= Position(0,0);
+    for(int i=0;i<10;++i){
+        if(start[i].first !=nullptr){
+            a=*start[i].first;
+            if(start[i].second !=nullptr){
+                b=*start[i].second;
+                G.show_path(a,b,b.dist_taxicab_to());
+                G.show_thoughts(a,b,b.dist_taxicab_to());
+            }
+            else {
+                b= Position(0,0);//throw instead ?
+            }
+        }
     }
-    else {
-        a=*start.first;
-    }
-    if(start.second ==nullptr){
-        b= Position(0,0);
-    }
-    else {
-        b=*start.second;
-    }
-    G.show_path(a,b,b.dist_taxicab_to());
-    G.show_thoughts(a,b,b.dist_taxicab_to());
-    return 0;
+    return 0;    
 }

@@ -6,7 +6,7 @@
 class Cell {
 public:
     virtual ~Cell() = default;
-    virtual int get_id() const;
+    virtual int get_id() const noexcept;
 };
 
 class Wall : public Cell {};

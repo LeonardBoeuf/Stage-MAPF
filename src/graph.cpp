@@ -8,6 +8,7 @@
 #include <ctime>
 #include "priority_queue.hh"
 #include "icst.hpp"
+#include "mdd.hpp"
 
 float framerate=900;
 int etapes_par_frames = 4;
@@ -522,11 +523,40 @@ std::vector<std::vector<Position>> Graph::icst(const std::vector<Position> &star
 
     // Init ICST (Increasing Cost Search Tree)
     ICST icst(a_star_costs);
-    
+    // Init MDDs matrix
+    std::vector<std::vector<MDD>> mdds(k,std::vector<MDD>());
     sf::Time maxComputeTime_(sf::seconds(maxComputeTime));
     sf::Clock timer;
     while (timer.getElapsedTime() < maxComputeTime_) {
         std::vector<unsigned int> icst_node(icst.next());
-        
+
+        // Init or create MDDs with desired cost
+        if (mdds[0].size() == 0) {
+            for (int i(0); i<k; ++i) {
+                //mdds[i].push_back(MDD(starts[i],goals[i],s_star_costs[i]));
+            }
+        } else {
+            for (int i(0); i<k; ++i) {
+                unsigned int delta (icst_node[i] - a_star_costs[i]);
+                if (mdds[i].size() == delta) { // Cannot be <
+                    //mdds[i].push_back(mdds[i][delta-1].create_increased_cost());
+                }
+            }
+        }
+
+        // Pairwise prunning
+        for (int i(0); i<k; ++i) {
+            for (int j(i+1); j<k; ++j) {
+                //  if (!MDD::cross_prunning(mdds[i][icst_node[i] - a_star_costs[i]],mdds[j][icst_node[j] - a_star_costs[j]])) {
+                //      return std::vector<std::vector<Position>>(); // No solution
+                // }
+            }
+        }
+
+        //  Searching k-MDD
+        //  std::vector<std::vector<Position>> kMDD();
+        //  if (kMDD.size() > 0) {
+        //      return kMDD;
+        //  }
     }
 }

@@ -2,15 +2,13 @@
 
 #include <vector>
 
-using Node = std::vector<unsigned int>;
-
 class ICST {
 private:
-    std::vector<Node> nodes_;
+    std::vector<std::vector<unsigned int>> nodes_;
 public:
     ICST(const std::vector<unsigned int>&) noexcept;
     ICST(const ICST&) = delete;
     ICST(ICST&&) = default;
 
-    Node next() noexcept;
+    std::vector<unsigned int> next() noexcept;
 };

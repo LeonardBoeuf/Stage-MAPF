@@ -30,7 +30,39 @@ Graph::Graph(unsigned int width, unsigned int height):
 
 bool Graph::is_empty(const Position &pos) const {
     // return grille_[pos.get_y()][pos.get_x()] == nullptr;
-    return grille_.at(pos.get_y()).at(pos.get_x()) == nullptr;
+    return grille_.at(pos.get_y()).at(pos.get_x()).;
+}
+
+int Graph::get_agent_id(const Position &pos) const{
+    // return grille_[pos.get_y()][pos.get_x()] == nullptr;
+    return ;
+}
+
+Position Graph::get_agent_pos(const int id) const{
+    int i=0;
+    int j=0;
+    bool trouve=false;
+    while (i<width_)
+    {
+        while (j<height_)
+            {
+                if(Graph::get_agent_id(Position(i,j))==id){
+                    return Position(i,j);
+                }
+                ++j;
+            }
+        ++i;
+    }
+    throw std::exception();
+    
+}
+
+void Graph::move_agent(const Position &from, const Position &to){
+    if(Graph::is_agent(from)){
+        int id=Graph::get_agent_id(from);
+        Graph::set_empty(from);
+        Graph::new_agent(to,id);
+    }
 }
 
 unsigned int Graph::get_width() const noexcept {

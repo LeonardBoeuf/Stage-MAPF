@@ -6,6 +6,7 @@
 class Cell {
 public:
     virtual ~Cell() = default;
+    virtual int get_id() const;
 };
 
 class Wall : public Cell {};
@@ -15,7 +16,7 @@ private:
 public:
     Agent(int id) noexcept;
 
-    int get_id() const noexcept;
+    int get_id() const noexcept override;
 };
 
 class Position {

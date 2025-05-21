@@ -2,6 +2,10 @@
 
 Agent::Agent(int id) noexcept : Cell(), id_(id) {}
 
+int Cell::get_id() const noexcept {
+    return -1;
+}
+
 int Agent::get_id() const noexcept {
     return id_;
 }

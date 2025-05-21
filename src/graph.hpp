@@ -30,8 +30,8 @@ public:
     bool is_empty(const Position &pos) const;
     bool is_wall(const Position &pos) const;
     bool is_agent(const Position &pos) const;
-    // int get_agent_id(const Position &pos) const;
-    // std::pair<int,int> get_agent_pos(const int id) const;
+    int get_agent_id(const Position &pos) const;
+    Position get_agent_pos(const int id) const;
     unsigned int get_width() const noexcept;
     unsigned int get_height() const noexcept;
     
@@ -41,7 +41,7 @@ public:
     void new_wall(const unsigned int x, const unsigned int y);
     void new_agent(const Position &pos, const int id);
     void new_agent(const unsigned int x, const unsigned int y, const int id);
-    // void move_agent(const Position &from, const Position &to);
+    void move_agent(const Position &from, const Position &to);
 
     std::pair<int,int> pos_clicked(sf::Window & w);
 

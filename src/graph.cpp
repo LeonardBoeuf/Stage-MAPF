@@ -29,41 +29,41 @@ Graph::Graph(unsigned int width, unsigned int height):
 }
 
 bool Graph::is_empty(const Position &pos) const {
-    // return grille_[pos.get_y()][pos.get_x()] == nullptr;
-    return grille_.at(pos.get_y()).at(pos.get_x()).;
+    return grille_[pos.get_y()][pos.get_x()] == nullptr;
+    // return grille_.at(pos.get_y()).at(pos.get_x()) == nu;
 }
 
-int Graph::get_agent_id(const Position &pos) const{
-    // return grille_[pos.get_y()][pos.get_x()] == nullptr;
-    return ;
-}
+// int Graph::get_agent_id(const Position &pos) const{
+//     // return grille_[pos.get_y()][pos.get_x()] == nullptr;
+//     return ;
+// }
 
-Position Graph::get_agent_pos(const int id) const{
-    int i=0;
-    int j=0;
-    bool trouve=false;
-    while (i<width_)
-    {
-        while (j<height_)
-            {
-                if(Graph::get_agent_id(Position(i,j))==id){
-                    return Position(i,j);
-                }
-                ++j;
-            }
-        ++i;
-    }
-    throw std::exception();
+// Position Graph::get_agent_pos(const int id) const{
+//     int i=0;
+//     int j=0;
+//     bool trouve=false;
+//     while (i<width_)
+//     {
+//         while (j<height_)
+//             {
+//                 if(Graph::get_agent_id(Position(i,j))==id){
+//                     return Position(i,j);
+//                 }
+//                 ++j;
+//             }
+//         ++i;
+//     }
+//     throw std::exception();
     
-}
+// }
 
-void Graph::move_agent(const Position &from, const Position &to){
-    if(Graph::is_agent(from)){
-        int id=Graph::get_agent_id(from);
-        Graph::set_empty(from);
-        Graph::new_agent(to,id);
-    }
-}
+// void Graph::move_agent(const Position &from, const Position &to){
+//     if(Graph::is_agent(from)){
+//         int id=Graph::get_agent_id(from);
+//         Graph::set_empty(from);
+//         Graph::new_agent(to,id);
+//     }
+// }
 
 unsigned int Graph::get_width() const noexcept {
     return width_;
@@ -550,7 +550,7 @@ std::vector<std::vector<Position>> Graph::icst(const std::vector<Position> &star
     for(int i(0); i<k; ++i) {
         a_star_paths.push_back(this->a_star(starts[i],goals[i],goals[i].dist_taxicab_to()));
         if (a_star_paths[i].size() <= 0) return std::vector<std::vector<Position>>(); // No solution
-        a_star_costs.push_back(a_star_costs.size());
+        a_star_costs.push_back(a_star_paths.size()-1);
     }
 
     // Init ICST (Increasing Cost Search Tree)
@@ -565,13 +565,15 @@ std::vector<std::vector<Position>> Graph::icst(const std::vector<Position> &star
         // Init or create MDDs with desired cost
         if (mdds[0].size() == 0) {
             for (int i(0); i<k; ++i) {
-                //mdds[i].push_back(MDD(starts[i],goals[i],s_star_costs[i]));
+                mdds[i].push_back(MDD(starts[i],goals[i],a_star_costs[i],width_,height_));
             }
         } else {
             for (int i(0); i<k; ++i) {
                 unsigned int delta (icst_node[i] - a_star_costs[i]);
                 if (mdds[i].size() == delta) { // Cannot be <
                     //mdds[i].push_back(mdds[i][delta-1].create_increased_cost());
+                    // OR
+                    //mdds[i].push_back(MDD(starts[i],goals[i],icst_node[i],width_,height_))
                 }
             }
         }
@@ -579,16 +581,21 @@ std::vector<std::vector<Position>> Graph::icst(const std::vector<Position> &star
         // Pairwise prunning
         for (int i(0); i<k; ++i) {
             for (int j(i+1); j<k; ++j) {
-                //  if (!MDD::cross_prunning(mdds[i][icst_node[i] - a_star_costs[i]],mdds[j][icst_node[j] - a_star_costs[j]])) {
-                //      return std::vector<std::vector<Position>>(); // No solution
-                // }
+                if (!MDD::cross_prunning(mdds[i][icst_node[i] - a_star_costs[i]],mdds[j][icst_node[j] - a_star_costs[j]])) {
+                    return std::vector<std::vector<Position>>(); // No solution
+                }
             }
         }
 
         //  Searching k-MDD
-        //  std::vector<std::vector<Position>> kMDD();
-        //  if (kMDD.size() > 0) {
-        //      return kMDD;
-        //  }
+        std::vector<MDD> icst_mdd;
+        for (int i(0); i<k; ++i) icst_mdd.push_back(mdds[i][mdds[i].size()-1]);
+        std::vector<std::vector<Position>> kMDD(MDD::kMDD(icst_mdd));
+        if (kMDD.size() > 0) {
+            return kMDD;
+        }
     }
+
+    // For compiler
+    return std::vector<std::vector<Position>>();
 }

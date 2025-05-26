@@ -2,6 +2,13 @@
 #include <exception>
 #include <algorithm>
 
+Node new_node(std::vector<Position> pos) noexcept {
+    Node n;
+    n.children = std::set<std::vector<Position>>();
+    n.pos = pos;
+    n.valid_path = true;
+}
+
 std::vector<Position> neighbours(const Position &pos, const unsigned int width, const unsigned int height) {
     std::vector<Position> positions;
 
@@ -14,24 +21,15 @@ std::vector<Position> neighbours(const Position &pos, const unsigned int width, 
     return positions;
 }
 
-MDD::MDD(
-    const Position &start,
-    const Position &goal,
+MDD::MDD(const unsigned int cost, const std::vector<Position> &root) : cost_(cost), root_(root) {
+}
+
+MDD MDD::fabric_new(
+    const std::vector<Position> &start,
+    const std::vector<Position> &goal,
     const unsigned int cost,
     const unsigned int g_width,
     const unsigned int g_height
-) : start_(start), cost_(cost), diagram_() {
+) {
     if (cost == 0) throw std::invalid_argument("Cannot handle 0-cost MDDs");
-    if (cost == 1) {
-        auto nb (neighbours(start,g_width,g_height));
-        if (std::find(nb.begin(),nb.end(),goal) == nb.end()) throw std::invalid_argument("No path to goal with such cost");
-        Node n {true, std::vector<Position>()};
-        std::map<Position, Node> m {{goal,n}};
-        diagram_.push_back(m);
-    }
-
-    unsigned int current_cost(1);
-    while (current_cost < cost) {
-        
-    }
 }

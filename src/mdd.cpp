@@ -2,6 +2,13 @@
 #include <exception>
 #include <algorithm>
 
+Node new_node(std::vector<Position> pos) noexcept {
+    Node n;
+    n.children = std::set<Node*>();
+    n.pos = pos;
+    n.valid_path = true;
+}
+
 std::vector<Position> neighbours(const Position &pos, const unsigned int width, const unsigned int height) {
     std::vector<Position> positions;
 
@@ -14,71 +21,49 @@ std::vector<Position> neighbours(const Position &pos, const unsigned int width, 
     return positions;
 }
 
-MDD::MDD(
-    const Position &start,
-    const Position &goal,
+MDD::MDD(const unsigned int cost, const std::vector<Position> &root) : cost_(cost), root_(root) {}
+
+MDD MDD::fabric_new(
+    const std::vector<Position> &start,
+    const std::vector<Position> &goal,
     const unsigned int cost,
     const unsigned int g_width,
     const unsigned int g_height
-) : start_(start), cost_(cost), diagram_() {
+) {
     if (cost == 0) throw std::invalid_argument("Cannot handle 0-cost MDDs");
-    if (cost == 1) {
-        auto nb (neighbours(start,g_width,g_height));
-        if (std::find(nb.begin(),nb.end(),goal) == nb.end()) throw std::invalid_argument("No path to goal with such cost");
-        Node n {true, std::vector<Position>()};
-        std::map<Position, Node> m {{goal,n}};
-        diagram_.push_back(m);
-    }
-
-    unsigned int current_cost(1);
-    while (current_cost < cost) {
-        
-    }
 }
 
-std::pair<std::vector<bool>,std::vector<bool>> MDD::prunning_step(Position FromA, Node ToA ,Position FromB, Node ToB) noexcept{
-    auto ret=std::pair<std::vector<bool>,std::vector<bool>>((true,ToA.children.size()),(true,ToB.children.size()));
-    for(int i=0;i<ToA.children.size();++i){
-        if(ToA.children[i]==FromB /*and conflicts train interdits*/){
-            //train conflict
-            ret.first[i]=false;
-            /* gestion des swap si un train est autorisé
-                for(int j=0;j<ToB.children.size();++j){
-                    if(ToA.children[i]==FromB){
-                        //swap conflict
-                        ret.first[i]=false;
-                        ret.second[j]=false;
-                    }
-                }
-            */
+std::vector<Position> combiner(
+    std::vector<Position> & a,
+    std::vector<Position> & b,
+    const conflicts &c){
+        if(a==b and c.count(conflict_types::collision)>0){
+            throw std::invalid_argument("on avait dit pas les collision :(");
         }
-        for(int j=0;j<ToB.children.size();++j){
-            if(ToA.children[i]==ToB.children[i]){
-                
-            }
+        else{
+        std::vector<Position> nouveau(a);
+        auto i=b.begin();
+        while (i!=b.end()){
+            nouveau.push_back(*i);
+            ++i;
         }
-    }
+        return nouveau;
+        }
 }
 
-
-bool MDD::cross_prunning(MDD &a, MDD &b) noexcept{
-    if(a.start_==b.start_){
-        return false;
-    }
+MDD MDD::cross_prunning(MDD &a, MDD &b,const conflicts &c) noexcept{
     int n;
-    if(a.diagram_.size()>b.diagram_.size()){
-        n=a.diagram_.size();
-        /*Position goal = b.diagram_[b.diagram_.size()-1].begin()->first;
-        for(int i=b.diagram_.size();i<n;++i){
-            Node n {true, std::vector<Position>()};
-            std::map<Position, Node> m {{goal,n}};
-            b.diagram_.push_back(m);
-        }*/
+    if(a.cost_>b.cost_){
+        n=a.cost_;
     }
-    int i=0;
-    bool chemin= true;
-    while(i<n and chemin==true){
+    else {
+        n=b.cost_;
+    }
+    for (int i = 0; i < n; i++)
+    {
         
-        ++i;
     }
+    //MDD ab=fabric_new();
+
 }
+

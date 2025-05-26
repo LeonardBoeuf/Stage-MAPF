@@ -14,6 +14,7 @@ FetchContent_MakeAvailable(SFML)
 
 add_executable(
     main src/main.cpp
+    src/conflicts.hpp
     src/position.hpp
     src/position.cpp
     src/mdd.hpp

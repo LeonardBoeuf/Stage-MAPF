@@ -5,21 +5,21 @@
 #include "position.hpp"
 
 struct Node {
-    std::vector<Position> pos;
+    KdimPosition pos;
     std::set<Node*> children;
     bool valid_path;
 };
 
-Node new_node(std::vector<Position>) noexcept;
+Node new_node(const KdimPosition&) noexcept;
 
 class MDD {
 private:
     unsigned int cost_;
     Node* root_;
-    MDD(const unsigned int cost, const std::vector<Position> &root);
+    MDD(const unsigned int cost, Node* const root);
 
 public:
-    static MDD fabric_new(const std::vector<Position> &start, const std::vector<Position> &goal, const unsigned int cost, const unsigned int g_width, const unsigned int g_height) throw();
+    static MDD fabric_new(const KdimPosition &start, const KdimPosition &goal, const unsigned int cost, const unsigned int g_width, const unsigned int g_height) throw();
     MDD(const MDD&) noexcept; //MUST
     MDD(MDD&&) noexcept = default;
 

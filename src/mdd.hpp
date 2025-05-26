@@ -25,6 +25,7 @@ public:
 
     // Prune the two MDD to keep only compatible paths in both MDDs.
     // Return whether there is still at least one path for each MDD
+    static std::pair<std::vector<bool>,std::vector<bool>> prunning_step(Position FromA, Node ToA ,Position Fromb, Node ToB) noexcept;
     static bool cross_prunning(MDD &a, MDD &b) noexcept;
     // Perform the search of a k-cross-MDD.
     // Return a path for that MDD, solving MAPF

@@ -47,3 +47,18 @@ public:
     unsigned int dist_taxicab(const Position &pos) const noexcept;
     std::function<unsigned int (const Position&)> dist_taxicab_to() const noexcept;
 };
+
+class KdimPosition {
+private:
+    std::vector<Position> pos_;
+public:
+    KdimPosition(const std::vector<Position> pos) noexcept;
+    KdimPosition(const KdimPosition&) = default;
+    KdimPosition(KdimPosition&&) = default;
+    KdimPosition& operator=(const KdimPosition& kpos) noexcept;
+
+    bool operator==(const KdimPosition& kpos) const noexcept;
+    bool operator!=(const KdimPosition& kpos) const noexcept;
+
+    static KdimPosition merge(const KdimPosition &a, const KdimPosition &b) noexcept;
+};

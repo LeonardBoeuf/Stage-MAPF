@@ -78,3 +78,33 @@ std::ostream& operator<<(std::ostream &stream, const Position &pos) {
     stream << "(" << pos.x_ << "," << pos.y_ << ")";
     return stream;
 }
+
+
+KdimPosition::KdimPosition(const std::vector<Position> pos) : pos_(pos) {}
+
+KdimPosition::KdimPosition(const KdimPosition &kpos) : pos_(kpos.pos_) {}
+
+KdimPosition& KdimPosition::operator=(const KdimPosition &kpos) {
+    if (*this != kpos) {
+        this->pos_.empty();
+        for (int k(0); k<kpos.pos_.size(); ++k) this->pos_.push_back(kpos.pos_[k]);
+    }
+    return *this;
+}
+
+bool KdimPosition::operator==(const KdimPosition &kpos) const noexcept {
+    if (pos_.size() != kpos.pos_.size()) return false;
+    for (int k(0); k<pos_.size(); ++k) if (pos_[k] != kpos.pos_[k]) return false;
+    return true;
+}
+
+KdimPosition KdimPosition::merge(const KdimPosition &a, const KdimPosition &b) noexcept {
+    unsigned int a_size(a.pos_.size());
+    unsigned int b_size(b.pos_.size());
+    std::vector<Position> pos(a_size + b_size);
+
+    for (int k(0); k<a_size; ++k) pos.push_back(a.pos_[k]);
+    for (int k(0); k<b_size; ++k) pos.push_back(b.pos_[k]);
+    
+    return KdimPosition(pos);
+}

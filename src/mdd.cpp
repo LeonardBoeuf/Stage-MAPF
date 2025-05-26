@@ -1,6 +1,7 @@
 #include "mdd.hpp"
 #include <exception>
 #include <algorithm>
+#include <map>
 
 Node new_node(std::vector<Position> pos) noexcept {
     Node n;
@@ -33,23 +34,98 @@ MDD MDD::fabric_new(
     if (cost == 0) throw std::invalid_argument("Cannot handle 0-cost MDDs");
 }
 
-std::vector<Position> combiner(
-    std::vector<Position> & a,
-    std::vector<Position> & b,
+bool check(std::vector<Position> &FromA,
+    std::vector<Position> &FromB,
+    std::vector<Position> &ToA,
+    std::vector<Position> ToB,
     const conflicts &c){
-        if(a==b and c.count(conflict_types::collision)>0){
-            throw std::invalid_argument("on avait dit pas les collision :(");
+    std::map<Position,int> compteur;
+    for (int i = 0; i < ToA.size()+ToB.size(); i++)
+    {
+        Position current;
+        if(i< ToA.size()){
+            current=ToA[i];
         }
         else{
-        std::vector<Position> nouveau(a);
-        auto i=b.begin();
-        while (i!=b.end()){
-            nouveau.push_back(*i);
-            ++i;
+            current=ToB[i-ToA.size()];
         }
-        return nouveau;
+        compteur[current]=0;
+    }
+    for (int i = 0; i < ToA.size()+ToB.size(); i++)
+    {
+        Position current;
+        if(i< ToA.size()){
+            current=ToA[i];
         }
+        else{
+            current=ToB[i-ToA.size()];
+        }
+        compteur[current]++;
+        if(compteur[current]>1 and c.collision==false){//conflict de collision
+            return false;
+        }
+    }
+    for (int i = 0; i < FromA.size()+FromB.size(); i++)
+    {
+        Position current;
+        if(i< FromA.size()){
+            current=FromA[i];
+        }
+        else{
+            current=FromB[i-FromA.size()];
+        }
+        if(compteur[current]==1){//cas >1 à gerer plus tard : si les collisions sont autorisées mais pas les trains par exemple
+            Position other;
+            if(i< ToA.size()){
+                other=ToA[i];
+            }
+            else{
+                other=ToB[i-ToA.size()];
+            }
+            if(current!=other and c.follow==ConflictFollow::no_train){//conflict de train
+
+            }
+        }
+    }
+    
+
+
 }
+/*void check(Node &a, Node &b, const conflicts &c={conflict_types::collision}){
+    auto i=a.children.begin();
+    while(i!=a.children.end()){
+        auto j=a.children.begin();
+        while(j!=a.children.end()){
+            std::map<Position,int> compteur;
+            for (int i = 0; i < (**i).pos.size()+(**j).pos.size(); i++)
+            {
+                Position current;
+                if(i< (**i).pos.size()){
+                    current=(**i).pos[i];
+                }
+                else{
+                    current=(**j).pos[i-(**i).pos.size()];
+                }
+                compteur[current]=0;
+            }
+            for (int i = 0; i < (**i).pos.size()+(**j).pos.size(); i++)
+            {
+                Position current;
+                if(i< (**i).pos.size()){
+                    current=(**i).pos[i];
+                }
+                else{
+                    current=(**j).pos[i-(**i).pos.size()];
+                }
+                compteur[current]++;
+            }
+            auto y=compteur.begin();
+
+            ++j;
+        }
+        ++i;
+    }
+}*/
 
 MDD MDD::cross_prunning(MDD &a, MDD &b,const conflicts &c) noexcept{
     int n;

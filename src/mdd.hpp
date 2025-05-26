@@ -15,6 +15,8 @@ Node new_node(std::vector<Position>) noexcept;
 
 std::vector<Position> combiner(std::vector<Position> & a,std::vector<Position> & b, const conflicts &c={conflict_types::collision});
 
+bool check(std::vector<Position> &FromA, std::vector<Position> &FromB,std::vector<Position> &ToA,std::vector<Position> ToB, const conflicts &c={conflict_types::collision});
+
 class MDD {
 private:
     unsigned int cost_;

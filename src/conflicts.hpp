@@ -1,10 +1,14 @@
 #include <set>
 
-enum class conflict_types{
-    collision,
-    swap,
-    train,
-    cycle
+enum class ConflictFollow{
+    no_train,
+    no_cycle,
+    no_swap,
+    yes_all
 };
 
-using conflicts=std::set<conflict_types>;
+struct conflicts
+{
+    bool collision;
+    ConflictFollow follow;
+};

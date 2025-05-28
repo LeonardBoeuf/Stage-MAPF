@@ -3,35 +3,46 @@
 #include <algorithm>
 #include <map>
 
-Node new_node(std::vector<Position> pos) noexcept {
-    Node n;
-    n.children = std::set<Node*>();
-    n.pos = pos;
-    n.valid_path = true;
+Node new_node(const KdimPosition &pos) noexcept {
+    return Node {pos, std::set<Node*>(), true};
 }
 
 std::vector<Position> neighbours(const Position &pos, const unsigned int width, const unsigned int height) {
     std::vector<Position> positions;
 
-    positions.push_back(pos);
     if (pos.get_x() > 0) positions.push_back(Position(pos.get_x()-1,pos.get_y()));
     if (pos.get_y() > 0) positions.push_back(Position(pos.get_x(),pos.get_y()-1));
     if (pos.get_x()+1 < width) positions.push_back(Position(pos.get_x()+1,pos.get_y()));
     if (pos.get_y()+1 < height) positions.push_back(Position(pos.get_x(),pos.get_y()+1));
+    positions.push_back(pos);
 
     return positions;
 }
 
-MDD::MDD(const unsigned int cost, const std::vector<Position> &root) : cost_(cost), root_(root) {}
+MDD::MDD(const unsigned int cost, Node* const root) : cost_(cost), root_(root) {}
 
 MDD MDD::fabric_new(
-    const std::vector<Position> &start,
-    const std::vector<Position> &goal,
+    const KdimPosition &start,
+    const KdimPosition &goal,
     const unsigned int cost,
     const unsigned int g_width,
     const unsigned int g_height
 ) {
-    if (cost == 0) throw std::invalid_argument("Cannot handle 0-cost MDDs");
+    if (cost == 0) {
+        if (start != goal) throw std::invalid_argument("No such MDD");
+        else return MDD(cost, new Node(new_node(KdimPosition(start))));
+    }
+    
+    Node root(new_node(start));
+    std::vector<std::vector<KdimPosition>> present_positions(cost+1);
+    unsigned int current_cost(1);
+    while (current_cost < cost) {
+        for (const auto &agent : present_positions[present_positions.size()-1]) {
+            
+        }
+    }
+
+
 }
 
 bool check(std::vector<Position> &FromA,
@@ -65,25 +76,82 @@ bool check(std::vector<Position> &FromA,
             return false;
         }
     }
+    Position current;
+    Position other;
     for (int i = 0; i < FromA.size()+FromB.size(); i++)
     {
-        Position current;
         if(i< FromA.size()){
             current=FromA[i];
         }
         else{
             current=FromB[i-FromA.size()];
         }
-        if(compteur[current]==1){//cas >1 à gerer plus tard : si les collisions sont autorisées mais pas les trains par exemple
-            Position other;
+        bool train=false;
+        if(compteur[current]>1){//conflict de train
+            train=true;
+        }
+        else if(compteur[current]==1){//attention : other ne fonctionne pas dans ce cas là.
             if(i< ToA.size()){
                 other=ToA[i];
             }
             else{
                 other=ToB[i-ToA.size()];
             }
-            if(current!=other and c.follow==ConflictFollow::no_train){//conflict de train
-
+            if(current!=other ){//conflict de train
+                train=true;
+            }
+        }
+        if(train){
+            if(c.follow==ConflictFollow::no_train){
+                return false;
+            }
+            else{
+                //on a un train qui commence à current. Maintenant, identifier si on à un cycle.
+                //voir si other n'est pas aussi un cas de train.
+                std::set<Position> visites;
+                bool continuer=true;
+                int pos_cur=i;
+                while (continuer and visites.count(current)==0)
+                {
+                    visites.insert(current);//on à visité current
+                    int x = 0;
+                    while ( x < ToA.size()+ToB.size() and other!=current)//trouver sur quelle position atteris notre current
+                    {
+                        if(x!=pos_cur){
+                            if(x< ToA.size()){
+                                other=ToA[x];
+                            }
+                            else{
+                                other=ToB[x-ToA.size()];
+                            }
+                        }
+                        ++x;
+                    }
+                    if(x==ToA.size()+ToB.size()){//on a pas trouvé : on arrète de parcourir
+                        continuer=false;
+                    }
+                    else{
+                        if(x< FromA.size()){
+                            current=FromA[x];
+                        }
+                        else{
+                            current=FromB[x-FromA.size()];
+                        }
+                        pos_cur=x;
+                        //on recommence la boucle à partir de la nouvelle case
+                    }
+                    
+                }
+                if(continuer){//conflict de cycle
+                    if(c.follow==ConflictFollow::no_cycle){
+                        return false;
+                    }
+                    else if(visites.size()==2){//conflict de swap
+                        if(c.follow==ConflictFollow::no_swap){
+                            return false;
+                        }
+                    }
+                }
             }
         }
     }
@@ -142,4 +210,3 @@ MDD MDD::cross_prunning(MDD &a, MDD &b,const conflicts &c) noexcept{
     //MDD ab=fabric_new();
 
 }
-

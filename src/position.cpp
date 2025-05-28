@@ -79,23 +79,34 @@ std::ostream& operator<<(std::ostream &stream, const Position &pos) {
     return stream;
 }
 
+KdimPosition::KdimPosition(const std::vector<Position> pos) noexcept : pos_(pos) {}
 
-KdimPosition::KdimPosition(const std::vector<Position> pos) : pos_(pos) {}
+KdimPosition::KdimPosition(const Position pos) noexcept : KdimPosition(std::vector<Position> {pos}) {}
 
-KdimPosition::KdimPosition(const KdimPosition &kpos) : pos_(kpos.pos_) {}
-
-KdimPosition& KdimPosition::operator=(const KdimPosition &kpos) {
+KdimPosition& KdimPosition::operator=(const KdimPosition &kpos) noexcept {
     if (*this != kpos) {
-        this->pos_.empty();
+        this->pos_.clear();
         for (int k(0); k<kpos.pos_.size(); ++k) this->pos_.push_back(kpos.pos_[k]);
     }
     return *this;
+}
+
+unsigned int KdimPosition::get_dim_k() const noexcept {
+    return pos_.size();
+}
+
+const Position& KdimPosition::nth_pos(const unsigned int n) const throw() {
+    return pos_.at(n);
 }
 
 bool KdimPosition::operator==(const KdimPosition &kpos) const noexcept {
     if (pos_.size() != kpos.pos_.size()) return false;
     for (int k(0); k<pos_.size(); ++k) if (pos_[k] != kpos.pos_[k]) return false;
     return true;
+}
+
+bool KdimPosition::operator!=(const KdimPosition &kpos) const noexcept {
+    return !operator==(kpos);
 }
 
 KdimPosition KdimPosition::merge(const KdimPosition &a, const KdimPosition &b) noexcept {
@@ -105,6 +116,6 @@ KdimPosition KdimPosition::merge(const KdimPosition &a, const KdimPosition &b) n
 
     for (int k(0); k<a_size; ++k) pos.push_back(a.pos_[k]);
     for (int k(0); k<b_size; ++k) pos.push_back(b.pos_[k]);
-    
+
     return KdimPosition(pos);
 }

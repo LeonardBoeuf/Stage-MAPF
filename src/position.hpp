@@ -1,7 +1,7 @@
 #pragma once
 #include <iostream>
 #include <functional>
-
+#include <vector>
 
 class Cell {
 public:
@@ -53,9 +53,13 @@ private:
     std::vector<Position> pos_;
 public:
     KdimPosition(const std::vector<Position> pos) noexcept;
+    KdimPosition(const Position pos) noexcept;
     KdimPosition(const KdimPosition&) = default;
     KdimPosition(KdimPosition&&) = default;
     KdimPosition& operator=(const KdimPosition& kpos) noexcept;
+
+    unsigned int get_dim_k() const noexcept;
+    const Position& nth_pos(const unsigned int n) const throw();
 
     bool operator==(const KdimPosition& kpos) const noexcept;
     bool operator!=(const KdimPosition& kpos) const noexcept;

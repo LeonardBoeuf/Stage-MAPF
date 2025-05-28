@@ -565,7 +565,7 @@ std::vector<std::vector<Position>> Graph::icst(const std::vector<Position> &star
         // Init or create MDDs with desired cost
         if (mdds[0].size() == 0) {
             for (int i(0); i<k; ++i) {
-                mdds[i].push_back(MDD(starts[i],goals[i],a_star_costs[i],width_,height_));
+                mdds[i].push_back(MDD::fabric_new(starts[i],goals[i],a_star_costs[i],width_,height_));
             }
         } else {
             for (int i(0); i<k; ++i) {
@@ -581,21 +581,21 @@ std::vector<std::vector<Position>> Graph::icst(const std::vector<Position> &star
         // Pairwise prunning
         for (int i(0); i<k; ++i) {
             for (int j(i+1); j<k; ++j) {
-                if (!MDD::cross_prunning(mdds[i][icst_node[i] - a_star_costs[i]],mdds[j][icst_node[j] - a_star_costs[j]])) {
-                    return std::vector<std::vector<Position>>(); // No solution
-                }
+                // if (!MDD::cross_prunning(mdds[i][icst_node[i] - a_star_costs[i]],mdds[j][icst_node[j] - a_star_costs[j]])) {
+                //     return std::vector<std::vector<Position>>(); // No solution
+                // }
             }
         }
 
         //  Searching k-MDD
         std::vector<MDD> icst_mdd;
         for (int i(0); i<k; ++i) icst_mdd.push_back(mdds[i][mdds[i].size()-1]);
-        std::vector<std::vector<Position>> kMDD(MDD::kMDD(icst_mdd));
-        if (kMDD.size() > 0) {
-            return kMDD;
-        }
+        // std::vector<std::vector<Position>> kMDD(MDD::kMDD(icst_mdd));
+        // if (kMDD.size() > 0) {
+        //     return kMDD;
+        // }
     }
 
-    // For compiler
+    // For compiler 
     return std::vector<std::vector<Position>>();
 }

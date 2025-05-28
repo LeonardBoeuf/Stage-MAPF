@@ -1,9 +1,9 @@
 #include <set>
 
 enum class ConflictFollow{
-    no_train,
-    no_cycle,
-    no_swap,
+    no_train,//implies no cycle or swap
+    no_cycle,//implies no swap and yes to train
+    no_swap,//implies yes to train
     yes_all
 };
 

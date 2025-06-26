@@ -9,6 +9,6 @@ enum class ConflictFollow{
 
 struct conflicts
 {
-    bool collision;
+    bool collision;//si true alors on autorise les collisions
     ConflictFollow follow;
 };

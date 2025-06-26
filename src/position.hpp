@@ -54,9 +54,10 @@ private:
 public:
     KdimPosition(const std::vector<Position> pos) noexcept;
     KdimPosition(const Position pos) noexcept;
-    KdimPosition(const KdimPosition&) = default;
+    KdimPosition(const KdimPosition&);
     KdimPosition(KdimPosition&&) = default;
     KdimPosition& operator=(const KdimPosition& kpos) noexcept;
+    friend std::ostream& operator<<(std::ostream &stream, const KdimPosition &pos);
 
     unsigned int get_dim_k() const noexcept;
     const Position& nth_pos(const unsigned int n) const throw();

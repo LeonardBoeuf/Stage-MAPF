@@ -5,6 +5,8 @@
 #include <vector>
 #include <exception>
 
+#include "mdd.hpp"
+#include "icst.hpp"
 #include "position.hpp"
 
 
@@ -16,6 +18,8 @@ class GraphException : public std::exception {
 };
 
 using StartsAndGoals = std::vector<std::pair<Position*,Position*>>;
+
+void afficher_liste_chemins(const std::vector<std::vector<Position>> & c);
 
 class Graph {
 private:
@@ -43,14 +47,20 @@ public:
     void new_agent(const unsigned int x, const unsigned int y, const int id);
     // void move_agent(const Position &from, const Position &to);
 
+    std::vector<std::vector<Position>> chemins_taille_n(const Position &start,const Position &goal,unsigned int n) const;
+
     std::pair<int,int> pos_clicked(sf::Window & w);
 
     void make_lab();
     StartsAndGoals draw();
     void show_path(const Position &start, const Position &goal, std::function<unsigned int (const Position&)> h);
     void show_thoughts(const Position &start, const Position &goal, std::function<unsigned int (const Position&)> h);
-
     
+    std::vector<KdimPosition> mapf_icst(StartsAndGoals &, const conflicts &c);
+    
+    void show_mapf_solution(const std::vector<KdimPosition> &vect);
+
     std::vector<Position> a_star(const Position &start, const Position &goal, std::function<unsigned int (const Position&)> h) const;
+    unsigned int longeur_a_star(const Position &start, const Position &goal, std::function<unsigned int (const Position&)> h) const;
     std::vector<std::vector<Position>> icst(const std::vector<Position> &starts, const std::vector<Position> &goals, const float maxComputeTime) const;
 };

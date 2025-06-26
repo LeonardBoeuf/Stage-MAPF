@@ -83,6 +83,13 @@ KdimPosition::KdimPosition(const std::vector<Position> pos) noexcept : pos_(pos)
 
 KdimPosition::KdimPosition(const Position pos) noexcept : KdimPosition(std::vector<Position> {pos}) {}
 
+KdimPosition::KdimPosition(const KdimPosition& K):pos_(){
+    for (int i = 0; i < K.pos_.size(); i++)
+    {
+        pos_.push_back(K.pos_[i]);
+    }
+}
+
 KdimPosition& KdimPosition::operator=(const KdimPosition &kpos) noexcept {
     if (*this != kpos) {
         this->pos_.clear();
@@ -109,13 +116,24 @@ bool KdimPosition::operator!=(const KdimPosition &kpos) const noexcept {
     return !operator==(kpos);
 }
 
+std::ostream& operator<<(std::ostream &stream, const KdimPosition &pos) {
+    for (int i = 0; i < pos.get_dim_k()-1; i++)
+    {
+        stream << pos.nth_pos(i)<<"|";
+    } 
+    stream << pos.nth_pos(pos.get_dim_k()-1);
+    return stream;
+}
+
 KdimPosition KdimPosition::merge(const KdimPosition &a, const KdimPosition &b) noexcept {
     unsigned int a_size(a.pos_.size());
     unsigned int b_size(b.pos_.size());
-    std::vector<Position> pos(a_size + b_size);
+    std::vector<Position> pos;
+    pos.reserve(a_size+b_size);
 
     for (int k(0); k<a_size; ++k) pos.push_back(a.pos_[k]);
     for (int k(0); k<b_size; ++k) pos.push_back(b.pos_[k]);
+    //std::cout<<"le merged commence par :"<<pos[0]<<"et est de longueur"<<pos.size()<<" ("<<a_size<<", "<<b_size<<")"<<std::endl;
 
     return KdimPosition(pos);
 }

@@ -8,11 +8,8 @@
 #include <ctime>
 #include "priority_queue.hh"
 #include "icst.hpp"
-#include "mdd.hpp"
-
 float framerate=900;
 int etapes_par_frames = 4;
-
 
 
 Graph::Graph(unsigned int width, unsigned int height):
@@ -83,6 +80,7 @@ void Graph::new_wall(const unsigned int x, const unsigned int y) {
 }
 
 bool Graph::is_wall(const Position &pos) const {
+    //std::cout<<"is_wall ("<<pos.get_x()<<", "<<pos.get_y()<<")"<<std::endl;
     if (grille_.at(pos.get_y()).at(pos.get_x()) == nullptr) return false;
     auto p(dynamic_cast<Wall *>(grille_[pos.get_y()][pos.get_x()].get()));
     return p != nullptr;
@@ -105,6 +103,81 @@ bool Graph::is_agent(const Position &pos) const {
 
 void Graph::new_agent(const Position &pos, const int id) {
     Graph::new_agent(pos.get_x(),pos.get_y(),id);
+}
+
+void afficher_liste_chemins(const std::vector<std::vector<Position>> & c){
+    auto i = c.begin();
+    while (i!=c.end())
+    {
+        auto j=(*i).end();
+        j--;
+        while (j!=(*i).begin())
+        {
+            std::cout<<*j;
+            --j;
+            std::cout<<"|";
+        }
+        std::cout<<*j<<std::endl;
+        ++i;
+    }
+    
+    
+}
+
+std::vector<std::vector<Position>> Graph::chemins_taille_n(const Position &start, const Position &goal, unsigned int n) const{
+    std::vector<std::vector<Position>> chemins;
+    if (n == 0) {
+        if (start == goal){
+            std::vector<Position> chemin;
+            chemin.push_back(start);
+            chemins.push_back(chemin);
+        }
+    }
+    else{
+        std::vector<Position> next;
+        next.push_back(Position(start.get_x(),start.get_y()));
+        if ((start.get_x() +1 < width_) && (is_wall(Position(start.get_x()+1,start.get_y()))==false)) {
+            next.push_back(Position(start.get_x()+1,start.get_y()));
+        }
+        if ((start.get_y() +1 < height_) && (is_wall(Position(start.get_x(),start.get_y()+1))==false)) {
+            next.push_back(Position(start.get_x(),start.get_y()+1));
+        }
+        if ((start.get_x() >0) && (is_wall(Position(start.get_x()-1,start.get_y()))==false)) {
+            next.push_back(Position(start.get_x()-1,start.get_y()));
+        }
+        if ((start.get_y() >0) && (is_wall(Position(start.get_x(),start.get_y()-1))==false)) {
+            next.push_back(Position(start.get_x(),start.get_y()-1));
+        }
+        for(int i=0;i<next.size();++i){
+            std::vector<std::vector<Position>> nouveaux;
+            nouveaux=chemins_taille_n(next[i],goal,n-1);
+            auto j=nouveaux.begin();
+            while (j!=nouveaux.end())
+            {
+                (*j).push_back(start);
+                chemins.push_back(*j);
+                ++j;
+            }
+        }
+    }
+    return chemins;
+}
+
+MDD MDD::fabric_new(
+    const Position &start,
+    const Position &goal,
+    const unsigned int cost,
+    const Graph & g
+) {
+    std::vector<std::vector<Position>> chemins=g.chemins_taille_n(start,goal,cost);
+    // afficher_liste_chemins(chemins);
+    if(chemins.size()==0){
+        std::cout<<"pas de chemin de longueur "<<cost<<std::endl;
+        throw std::runtime_error("pas de chemin ? :(");
+    }
+    Node* racine= make_nodes(chemins);
+    MDD nouveau(cost,racine);
+    return nouveau;
 }
 
 void Graph::new_agent(const unsigned int x, const unsigned int y, const int id) {
@@ -231,7 +304,7 @@ StartsAndGoals Graph::draw(){
             auto [x,y]=Graph::pos_clicked(window);
             if(ret[num_pressed].first==nullptr){
                     ret[num_pressed].first=new Position(x,y);
-                    Graph::new_agent(*ret[num_pressed].first,num_pressed);
+                    //Graph::new_agent(*ret[num_pressed].first,num_pressed); //got rid of agents because cange of design
                 }
             else if(ret[num_pressed].second==nullptr){
                 if(Position(x,y)!=*ret[num_pressed].first)
@@ -248,6 +321,8 @@ StartsAndGoals Graph::draw(){
                 if(is_empty(Position(i,j))){
                     box.setFillColor(sf::Color(200,200,200)); 
                     for(int a=0; a<10;a++){
+                        if(ret[a].first!=nullptr and Position(i,j)==*ret[a].first)
+                            box.setFillColor(sf::Color(0,25*a,200)); 
                         if(ret[a].second!=nullptr and Position(i,j)==*ret[a].second)
                             box.setFillColor(sf::Color(25*a,200,0)); 
                     }                    
@@ -274,6 +349,9 @@ void Graph::show_path(
     ){
     Graph::new_agent(start,1);
     auto vect =Graph::a_star(start,goal,h);
+
+    /*auto chemins=chemins_taille_n(start,goal,vect.size());
+    afficher_liste_chemins(chemins);*/
 
     auto window = sf::RenderWindow(sf::VideoMode({1920u, 1080u}), "Grille de MAPF");
     window.setFramerateLimit(framerate);
@@ -474,6 +552,160 @@ void Graph::show_thoughts(
     Graph::set_empty(start);
 }
 
+std::vector<KdimPosition> Graph::mapf_icst(StartsAndGoals & temp, const conflicts &c){
+    //algorythme de mapf
+    std::vector<unsigned int> cost_list;
+    StartsAndGoals S;
+    for (int i = 0; i < temp.size(); i++)//on crée la liste avec seulement les agents qui existent
+    {    
+        if(temp[i].first!=nullptr){//si l'agent existe
+            S.push_back(temp[i]);
+        }
+        
+    }
+    for (int i = 0; i < S.size(); i++)//pour chaque paire agent/destination
+    {    
+        unsigned int cout= Graph::longeur_a_star(*(S[i].first),*(S[i].second),(S[i].second)->dist_taxicab_to())-1;
+        if(cout==0) {
+            throw std::runtime_error("single agent pathfinding isn't solvable...... what do you want me to do ?");
+        }
+        cost_list.push_back(cout);
+    }
+    ICST I(cost_list);
+    bool continuer;
+    sf::Clock clock; // starts the clock
+    sf::Time t=sf::seconds(300);
+    MDD* final;
+    while (continuer)
+    {
+        if(clock.getElapsedTime()> t){
+        continuer=false;
+        throw std::runtime_error("took too long");
+        }
+        else{
+            continuer=false;//on suppose que ce sera la dernière étape
+            auto tab=I.next();
+            std::vector<MDD*> MDD_List;
+            std::cout<<"Nouvelle itération : "<<std::endl<<"("<<tab[0];
+            for (int j = 1; j < tab.size(); j++)//oui, retirer cette boucle for empèche le programe de fonctionner. oui . ?!!?!??.
+            {
+                std::cout<<", "<<tab[j];
+            }
+            std::cout<<")"<<std::endl;
+            for (int i = 0; i < tab.size(); i++)
+            {
+                MDD* M= new MDD(MDD::fabric_new(*(S[i].first),*(S[i].second),tab[i],*this));
+                MDD_List.push_back(M);
+            }
+            // std::cout<<"avant prunning"<<std::endl;
+            // for (int i = 1; i < tab.size(); i=i+2)
+            // {
+            //     //std::cout<<MDD_List[0].get_dim()<<std::endl;
+            //     MDD::cross_prunning(*MDD_List[i-1],*MDD_List[i],c);
+            // }
+            // std::cout<<"après prunning"<<std::endl;
+            final=new MDD(*MDD_List[0]);//works so MDD copy only breaks above
+            //std::cout<<"ici"<<std::endl;
+            for (int i = 1; i < tab.size(); i++)
+            {
+                try
+                {
+                    MDD M(MDD::fusion(*final,*MDD_List[i],c));
+                    // std::cout<<"taille de M :"<<M.get_dim()<<std::endl;
+                    *final=M;
+                    // std::cout<<"là"<<std::endl;
+                }
+                catch(const std::runtime_error& e)//la fusion à échoué
+                {
+                    //std::cout<<e.what()<<std::endl;
+                    continuer=true;//il faut passer à l'étape suivante
+                    break;
+                }                
+            }
+            for (int i = 0; i < MDD_List.size(); i++)
+            {
+                delete MDD_List[i];
+            }            
+        }
+    }
+    std::vector<KdimPosition> resultat=(*final).output();
+    //std::cout<<resultat.size()<<std::endl;
+    //auto test =resultat[0].get_dim_k();
+    /*for (int  i = 0; i+1 < resultat[0].get_dim_k(); i++)
+    {
+        std::cout<<resultat[0].nth_pos(i)<<"|"<<std::endl;
+    }*/
+    return resultat;
+}
+
+void Graph::show_mapf_solution( const std::vector<KdimPosition> &vect){
+    auto window = sf::RenderWindow(sf::VideoMode({1920u, 1080u}), "Grille de MAPF");
+    window.setFramerateLimit(framerate);
+    sf::Clock clock; // starts the clock
+    int step=0;
+    sf::Time t=sf::seconds(1.0f);
+    sf::Vector2u size = window.getSize();
+    auto [width, height] = size;
+
+    while (window.isOpen())
+    {
+        auto c = sf::Color(0,0,0); 
+        while (const std::optional event = window.pollEvent())
+        {
+            if (event->is<sf::Event::Closed>())
+            {
+                window.close();
+            }
+
+        }
+        if(clock.getElapsedTime()> t and step<vect.size()-1){
+            clock.restart();
+            // for (int  i = 0; i < vect[0].get_dim_k(); i++)
+            // {
+            //     std::cout<<vect[step].nth_pos(i)<<"|";
+            // }
+            // std::cout<<std::endl;
+            ++step;
+            t=t*0.98f;
+        }
+
+        window.clear(c);
+        //sf::Font font("../src/ARIAL.TTF");
+        for(int i=0;i<width_;i++){
+            for(int j=0;j<height_;j++){
+                sf::RectangleShape box({(float)(width/width_-1), (float)(height/height_-1)});
+                //sf::Text text(font);
+                // set the character size
+                //text.setCharacterSize(50);
+                //text.setFillColor(sf::Color::Red);
+                // text.setStyle(sf::Text::Bold | sf::Text::Underlined);
+                box.setFillColor(sf::Color(200,200,200)); //case vide
+                if(is_empty(Position(i,j))){
+                    for(int x=0;x<vect[0].get_dim_k();++x){//pour chaque agent
+                        if(Position(i,j)==vect[vect.size()-1].nth_pos(x)){//si la case est une case d'arrivée
+                            box.setFillColor(sf::Color(200,200,0));
+                            //text.setString(std::to_string(x));
+                            //text.setPosition({(float)(1+i*(width/width_)),(float)(1+j*(height/height_))});
+                        } 
+                        else if(Position(i,j)==vect[step].nth_pos(x)){//si la case est celle que l'agent visite à cette étape
+                            //text.setString(std::to_string(x));
+                            //text.setPosition({(float)(1+i*(width/width_)),(float)(1+j*(height/height_))});
+                            box.setFillColor(sf::Color(0,200,0));
+                        }
+                    }
+                }
+                else {
+                    if(is_wall(Position(i,j))) box.setFillColor(sf::Color(0,0,0)); 
+                }
+                    
+                box.setPosition({(float)(1+i*(width/width_)),(float)(1+j*(height/height_))});
+                window.draw(box);
+                //window.draw(text);
+            }
+        }
+        window.display();
+    }
+}
 
 std::vector<Position> Graph::a_star(
     const Position &start,
@@ -532,70 +764,9 @@ std::vector<Position> Graph::a_star(
             }
         }
     }
-
-
-    
     return std::vector<Position>();
 }
 
-
-std::vector<std::vector<Position>> Graph::icst(const std::vector<Position> &starts, const std::vector<Position> &goals, const float maxComputeTime) const {
-    // Check validity of input
-    unsigned int k = starts.size();
-    if (k == 0 || goals.size() != k) return std::vector<std::vector<Position>>(); // throw exception instead ?
-
-    // A_star all agents
-    std::vector<std::vector<Position>> a_star_paths(k);
-    std::vector<unsigned int> a_star_costs(k);
-    for(int i(0); i<k; ++i) {
-        a_star_paths.push_back(this->a_star(starts[i],goals[i],goals[i].dist_taxicab_to()));
-        if (a_star_paths[i].size() <= 0) return std::vector<std::vector<Position>>(); // No solution
-        a_star_costs.push_back(a_star_paths.size()-1);
-    }
-
-    // Init ICST (Increasing Cost Search Tree)
-    ICST icst(a_star_costs);
-    // Init MDDs matrix
-    std::vector<std::vector<MDD>> mdds(k,std::vector<MDD>());
-    sf::Time maxComputeTime_(sf::seconds(maxComputeTime));
-    sf::Clock timer;
-    while (timer.getElapsedTime() < maxComputeTime_) {
-        std::vector<unsigned int> icst_node(icst.next());
-
-        // Init or create MDDs with desired cost
-        if (mdds[0].size() == 0) {
-            for (int i(0); i<k; ++i) {
-                mdds[i].push_back(MDD::fabric_new(starts[i],goals[i],a_star_costs[i],width_,height_));
-            }
-        } else {
-            for (int i(0); i<k; ++i) {
-                unsigned int delta (icst_node[i] - a_star_costs[i]);
-                if (mdds[i].size() == delta) { // Cannot be <
-                    //mdds[i].push_back(mdds[i][delta-1].create_increased_cost());
-                    // OR
-                    //mdds[i].push_back(MDD(starts[i],goals[i],icst_node[i],width_,height_))
-                }
-            }
-        }
-
-        // Pairwise prunning
-        for (int i(0); i<k; ++i) {
-            for (int j(i+1); j<k; ++j) {
-                // if (!MDD::cross_prunning(mdds[i][icst_node[i] - a_star_costs[i]],mdds[j][icst_node[j] - a_star_costs[j]])) {
-                //     return std::vector<std::vector<Position>>(); // No solution
-                // }
-            }
-        }
-
-        //  Searching k-MDD
-        std::vector<MDD> icst_mdd;
-        for (int i(0); i<k; ++i) icst_mdd.push_back(mdds[i][mdds[i].size()-1]);
-        // std::vector<std::vector<Position>> kMDD(MDD::kMDD(icst_mdd));
-        // if (kMDD.size() > 0) {
-        //     return kMDD;
-        // }
-    }
-
-    // For compiler 
-    return std::vector<std::vector<Position>>();
+unsigned int Graph::longeur_a_star(const Position &start, const Position &goal, std::function<unsigned int (const Position&)> h) const{
+    return a_star(start,goal,h).size();
 }
